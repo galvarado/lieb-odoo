@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="product_category_puros" model="product.category">
+            <field name="name">Puros</field>
+            <field name="parent_id" ref="product.product_category_all"/>
+        </record>
+
+        <record id="product_category_tabaco_pipa" model="product.category">
+            <field name="name">Tabaco para Pipa</field>
+            <field name="parent_id" ref="product.product_category_all"/>
+        </record>
+
+    </data>
+</odoo>

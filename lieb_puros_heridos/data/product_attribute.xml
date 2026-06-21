@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="product_attribute_condicion" model="product.attribute">
+            <field name="name">Condición</field>
+            <field name="create_variant">dynamic</field>
+            <field name="sequence">1</field>
+        </record>
+
+        <record id="product_attribute_value_linea" model="product.attribute.value">
+            <field name="name">Línea</field>
+            <field name="attribute_id" ref="product_attribute_condicion"/>
+            <field name="sequence">1</field>
+        </record>
+
+        <record id="product_attribute_value_herido_20" model="product.attribute.value">
+            <field name="name">Herido 20%</field>
+            <field name="attribute_id" ref="product_attribute_condicion"/>
+            <field name="sequence">2</field>
+        </record>
+
+        <record id="product_attribute_value_herido_40" model="product.attribute.value">
+            <field name="name">Herido 40%</field>
+            <field name="attribute_id" ref="product_attribute_condicion"/>
+            <field name="sequence">3</field>
+        </record>
+
+        <record id="product_attribute_value_tolerable" model="product.attribute.value">
+            <field name="name">Tolerable</field>
+            <field name="attribute_id" ref="product_attribute_condicion"/>
+            <field name="sequence">4</field>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!--
+            Almacén Central (ALM)
+            Padre: stock.stock_location_company = vista raíz del warehouse por defecto.
+            Si el warehouse ALM NO es el primero creado en la instalación, ajustar
+            location_id al XML ID correcto de la vista del warehouse ALM.
+        -->
+        <record id="location_alm_revision_danados" model="stock.location">
+            <field name="name">Revisión-Dañados</field>
+            <field name="location_id" ref="stock.stock_location_company"/>
+            <field name="usage">internal</field>
+        </record>
+
+        <record id="location_alm_heridos" model="stock.location">
+            <field name="name">Heridos</field>
+            <field name="location_id" ref="stock.stock_location_company"/>
+            <field name="usage">internal</field>
+        </record>
+
+        <!--
+            Tienda Piloto
+            IMPORTANTE: location_id apunta al warehouse central como placeholder.
+            Antes de la validación manual de Fase 1, cambiar location_id al Stock
+            de la tienda piloto (ajustar en UI o actualizar este archivo con el
+            XML ID correcto del warehouse de la tienda).
+            El script scripts/bootstrap_piloto.py puede reasignar el padre
+            programáticamente tras crear el warehouse de la tienda.
+        -->
+        <record id="location_tienda_piloto_heridos" model="stock.location">
+            <field name="name">Heridos</field>
+            <field name="location_id" ref="stock.stock_location_company"/>
+            <field name="usage">internal</field>
+        </record>
+
+        <!-- Ubicaciones Virtuales -->
+        <record id="location_virtual_picado" model="stock.location">
+            <field name="name">Picado</field>
+            <field name="location_id" ref="stock.stock_location_locations_virtual"/>
+            <field name="usage">transit</field>
+        </record>
+
+        <record id="location_virtual_merma_puros" model="stock.location">
+            <field name="name">Merma Puros</field>
+            <field name="location_id" ref="stock.stock_location_locations_virtual"/>
+            <field name="usage">inventory</field>
+        </record>
+
+    </data>
+</odoo>
