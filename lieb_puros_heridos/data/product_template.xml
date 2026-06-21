@@ -11,7 +11,7 @@
         -->
         <record id="product_template_tabaco_pipa" model="product.template">
             <field name="name">Tabaco para Pipa</field>
-            <field name="type">product</field>
+            <field name="detailed_type">product</field>
             <field name="categ_id" ref="product_category_tabaco_pipa"/>
             <field name="uom_id" ref="uom.product_uom_gram"/>
             <field name="uom_po_id" ref="uom.product_uom_gram"/>
