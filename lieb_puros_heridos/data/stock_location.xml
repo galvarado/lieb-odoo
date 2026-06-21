@@ -20,21 +20,6 @@
             <field name="usage">internal</field>
         </record>
 
-        <!--
-            Tienda Piloto
-            IMPORTANTE: location_id apunta al warehouse central como placeholder.
-            Antes de la validación manual de Fase 1, cambiar location_id al Stock
-            de la tienda piloto (ajustar en UI o actualizar este archivo con el
-            XML ID correcto del warehouse de la tienda).
-            El script scripts/bootstrap_piloto.py puede reasignar el padre
-            programáticamente tras crear el warehouse de la tienda.
-        -->
-        <record id="location_tienda_piloto_heridos" model="stock.location">
-            <field name="name">Heridos</field>
-            <field name="location_id" ref="stock.stock_location_company"/>
-            <field name="usage">internal</field>
-        </record>
-
         <!-- Ubicaciones Virtuales -->
         <record id="location_virtual_picado" model="stock.location">
             <field name="name">Picado</field>
