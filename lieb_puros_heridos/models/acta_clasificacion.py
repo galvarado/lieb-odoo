@@ -132,7 +132,11 @@ class ActaClasificacion(models.Model):
         val_h20 = self.env.ref('lieb_puros_heridos.product_attribute_value_herido_20')
         val_h40 = self.env.ref('lieb_puros_heridos.product_attribute_value_herido_40')
         val_tol = self.env.ref('lieb_puros_heridos.product_attribute_value_tolerable')
-        loc_adj = self.env.ref('stock.location_inventory')
+        loc_adj = self.env['stock.location'].search(
+            [('usage', '=', 'inventory'), ('active', '=', True)], limit=1
+        )
+        if not loc_adj:
+            raise UserError(_('No se encontró una ubicación virtual de tipo "Inventario" en el sistema.'))
         loc_picado = self.env.ref('lieb_puros_heridos.location_virtual_picado')
 
         moves = self.env['stock.move']
