@@ -196,8 +196,8 @@ class ActaClasificacion(models.Model):
                     'origin': self.name or 'Acta Clasificación',
                 })
                 scrap.action_validate()
-                if scrap.move_id:
-                    moves |= scrap.move_id
+                if scrap.move_ids:
+                    moves |= scrap.move_ids
 
         self.move_ids = [(4, m.id) for m in moves]
 
