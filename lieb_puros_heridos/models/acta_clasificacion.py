@@ -225,7 +225,7 @@ class ActaClasificacion(models.Model):
         picking.action_assign()
 
         if picking.move_line_ids:
-            picking.move_line_ids.write({'quantity': picking.move_line_ids[0].reserved_uom_qty or qty})
+            picking.move_line_ids.write({'quantity': qty})
         else:
             self.env['stock.move.line'].create({
                 'picking_id': picking.id,
