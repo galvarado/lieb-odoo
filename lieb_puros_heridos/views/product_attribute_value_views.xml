@@ -3,15 +3,11 @@
 
     <record id="product_attribute_value_form_lieb" model="ir.ui.view">
         <field name="name">product.attribute.value.form.lieb</field>
-        <field name="model">product.attribute.value</field>
-        <field name="inherit_id" ref="product.product_attribute_value_view_form"/>
+        <field name="model">product.attribute</field>
+        <field name="inherit_id" ref="product.product_attribute_view_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//form/sheet" position="inside">
-                <group string="Puros Heridos">
-                    <field name="discount_percent"
-                           string="% de Descuento"
-                           help="Descuento aplicado al precio base del template. 20 = 20%. Solo aplica para el atributo Condición."/>
-                </group>
+            <xpath expr="//field[@name='value_ids']/list" position="inside">
+                <field name="discount_percent" string="% Descuento" optional="show"/>
             </xpath>
         </field>
     </record>
