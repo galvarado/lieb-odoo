@@ -123,6 +123,10 @@ class ActaClasificacion(models.Model):
         # No existe — activar PTAV y forzar creación
         if not ptav.ptav_active:
             ptav.sudo().write({'ptav_active': True})
+        # flush escribe a DB, invalidate limpia caché para que _create_variant_ids
+        # lea ptav_active=True recién guardado
+        self.env.flush_all()
+        self.env.invalidate_all()
         template.sudo()._create_variant_ids()
         self.env.flush_all()
         self.env.invalidate_all()
