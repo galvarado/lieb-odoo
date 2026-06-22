@@ -162,6 +162,7 @@ class ActaClasificacion(models.Model):
         if not loc_adj:
             raise UserError(_('No se encontró una ubicación virtual de tipo "Inventario" en el sistema.'))
         loc_picado = self.env.ref('lieb_puros_heridos.location_virtual_picado')
+        loc_heridos = self.env.ref('lieb_puros_heridos.location_alm_heridos')
 
         pickings = self.env['stock.picking']
         int_type = self.env['stock.picking.type'].search(
@@ -188,7 +189,7 @@ class ActaClasificacion(models.Model):
                 )
                 pick_in = self._make_picking(
                     int_type, variant_dest, qty,
-                    loc_adj, self.ubicacion_id,
+                    loc_adj, loc_heridos,
                     '%s – %s: entrada %s' % (self.name, template.name, attr_val.name),
                 )
                 pickings |= pick_out | pick_in
