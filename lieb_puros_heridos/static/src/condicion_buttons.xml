@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="lieb_puros_heridos.CondicionButtons" owl="1">
+        <div t-if="isLinea" class="d-flex gap-1 px-2 pb-1">
+            <button class="btn btn-sm btn-warning flex-fill fw-bold"
+                    t-on-click="() => this.applyCondicion('Herido 20%')">
+                Herido 20%
+            </button>
+            <button class="btn btn-sm btn-danger flex-fill fw-bold"
+                    t-on-click="() => this.applyCondicion('Herido 40%')">
+                Herido 40%
+            </button>
+            <button class="btn btn-sm btn-secondary flex-fill fw-bold"
+                    t-on-click="() => this.applyCondicion('Tolerable')">
+                Tolerable
+            </button>
+        </div>
+    </t>
+
+    <t t-name="point_of_sale.ProductScreen"
+       t-inherit="point_of_sale.ProductScreen"
+       t-inherit-mode="extension"
+       owl="1">
+        <xpath expr="//Numpad" position="before">
+            <CondicionButtons/>
+        </xpath>
+    </t>
+
+</templates>

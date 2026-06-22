@@ -39,7 +39,15 @@ class ProductProduct(models.Model):
             return result
         for product_data in result.get('data', []):
             product = self.browse(product_data['id'])
+            # Discount on lst_price for POS
             discount = product.lieb_condicion_discount
             if discount:
                 product_data['lst_price'] = product_data['lst_price'] * (1 - discount / 100.0)
+            # Condición value name for POS variant switching
+            condicion_val = None
+            for ptav in product.product_template_attribute_value_ids:
+                if ptav.attribute_id == condicion_attr:
+                    condicion_val = ptav.product_attribute_value_id.name
+                    break
+            product_data['lieb_condicion'] = condicion_val
         return result
