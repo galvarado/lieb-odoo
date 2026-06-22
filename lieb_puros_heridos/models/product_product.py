@@ -27,3 +27,10 @@ class ProductProduct(models.Model):
                         discount = ptav.product_attribute_value_id.discount_percent
                         break
             product.lieb_condicion_discount = discount
+
+    def _get_contextual_price(self, quantity=1.0):
+        price = super()._get_contextual_price(quantity)
+        discount = self.lieb_condicion_discount
+        if discount:
+            price = price * (1 - discount / 100.0)
+        return price
