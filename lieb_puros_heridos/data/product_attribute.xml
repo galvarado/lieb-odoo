@@ -4,7 +4,7 @@
 
         <record id="product_attribute_condicion" model="product.attribute">
             <field name="name">Condición</field>
-            <field name="create_variant">dynamic</field>
+            <field name="create_variant">always</field>
             <field name="sequence">1</field>
         </record>
 
