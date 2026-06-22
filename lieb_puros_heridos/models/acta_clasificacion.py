@@ -96,8 +96,11 @@ class ActaClasificacion(models.Model):
 
         if attr_value not in attr_line.value_ids:
             attr_line.write({'value_ids': [(4, attr_value.id)]})
+            self.env.flush_all()
 
-        ptav = self.env['product.template.attribute.value'].search([
+        ptav = self.env['product.template.attribute.value'].with_context(
+            active_test=False
+        ).search([
             ('product_tmpl_id', '=', template.id),
             ('product_attribute_value_id', '=', attr_value.id),
         ], limit=1)
@@ -108,18 +111,21 @@ class ActaClasificacion(models.Model):
 
         if not ptav.ptav_active:
             ptav.ptav_active = True
+            self.env.flush_all()
 
+        template.invalidate_recordset()
         template._create_variant_ids()
+        self.env.flush_all()
 
-        variant = self.env['product.product'].search([
+        variant = self.env['product.product'].with_context(active_test=False).search([
             ('product_tmpl_id', '=', template.id),
             ('product_template_attribute_value_ids', 'in', [ptav.id]),
-            ('active', 'in', [True, False]),
         ], limit=1)
 
         if not variant:
             raise UserError(_(
-                'No se pudo crear la variante "%s" para "%s".'
+                'No se pudo crear la variante "%s" para "%s". '
+                'Verifica que el producto tenga el atributo Condición activo.'
             ) % (attr_value.name, template.name))
 
         if not variant.active:
