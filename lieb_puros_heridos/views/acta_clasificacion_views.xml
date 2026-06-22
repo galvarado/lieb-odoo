@@ -18,12 +18,12 @@
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <button name="action_view_moves"
+                        <button name="action_view_pickings"
                                 type="object"
                                 class="oe_stat_button"
                                 icon="fa-exchange"
-                                invisible="move_count == 0">
-                            <field name="move_count" widget="statinfo" string="Movimientos"/>
+                                invisible="picking_count == 0">
+                            <field name="picking_count" widget="statinfo" string="Transferencias"/>
                         </button>
                     </div>
                     <div class="oe_title">

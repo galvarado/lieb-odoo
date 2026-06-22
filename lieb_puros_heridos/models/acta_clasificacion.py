@@ -54,23 +54,23 @@ class ActaClasificacion(models.Model):
         'acta_id',
         string='Líneas de Clasificación',
     )
-    move_ids = fields.Many2many(
-        'stock.move',
-        'acta_clasificacion_move_rel',
+    picking_ids = fields.Many2many(
+        'stock.picking',
+        'acta_clasificacion_picking_rel',
         'acta_id',
-        'move_id',
-        string='Movimientos',
+        'picking_id',
+        string='Transferencias',
         copy=False,
     )
-    move_count = fields.Integer(
-        string='Movimientos',
-        compute='_compute_move_count',
+    picking_count = fields.Integer(
+        string='Transferencias',
+        compute='_compute_picking_count',
     )
 
-    @api.depends('move_ids')
-    def _compute_move_count(self):
+    @api.depends('picking_ids')
+    def _compute_picking_count(self):
         for acta in self:
-            acta.move_count = len(acta.move_ids)
+            acta.picking_count = len(acta.picking_ids)
 
     def action_validate(self):
         self.ensure_one()
@@ -78,12 +78,12 @@ class ActaClasificacion(models.Model):
             raise UserError(_('El acta ya fue validada.'))
         if not self.line_ids:
             raise UserError(_('Agregue al menos una línea de clasificación.'))
+        # Asignar folio ANTES de generar movimientos para que el origen sea correcto
         seq = self.env['ir.sequence'].next_by_code('acta.clasificacion')
+        if seq:
+            self.name = seq
         self._generate_moves()
-        self.write({
-            'state': 'done',
-            'name': seq or self.name,
-        })
+        self.state = 'done'
         return True
 
     def _get_or_create_variant(self, template, attr_value):
@@ -163,7 +163,10 @@ class ActaClasificacion(models.Model):
             raise UserError(_('No se encontró una ubicación virtual de tipo "Inventario" en el sistema.'))
         loc_picado = self.env.ref('lieb_puros_heridos.location_virtual_picado')
 
-        moves = self.env['stock.move']
+        pickings = self.env['stock.picking']
+        int_type = self.env['stock.picking.type'].search(
+            [('code', '=', 'internal')], limit=1
+        )
 
         for line in self.line_ids:
             template = line.product_id
@@ -178,17 +181,17 @@ class ActaClasificacion(models.Model):
                 if qty <= 0:
                     continue
                 variant_dest = self._get_or_create_variant(template, attr_val)
-                move_out = self._make_move(
-                    variant_linea, qty,
+                pick_out = self._make_picking(
+                    int_type, variant_linea, qty,
                     self.ubicacion_id, loc_adj,
-                    '%s – %s: salida Línea' % (self.name or 'Acta', template.name),
+                    '%s – %s: salida Línea' % (self.name, template.name),
                 )
-                move_in = self._make_move(
-                    variant_dest, qty,
+                pick_in = self._make_picking(
+                    int_type, variant_dest, qty,
                     loc_adj, self.ubicacion_id,
-                    '%s – %s: entrada %s' % (self.name or 'Acta', template.name, attr_val.name),
+                    '%s – %s: entrada %s' % (self.name, template.name, attr_val.name),
                 )
-                moves |= move_out | move_in
+                pickings |= pick_out | pick_in
 
             if line.qty_picado > 0:
                 scrap = self.env['stock.scrap'].create({
@@ -197,33 +200,36 @@ class ActaClasificacion(models.Model):
                     'scrap_qty': line.qty_picado,
                     'location_id': self.ubicacion_id.id,
                     'scrap_location_id': loc_picado.id,
-                    'origin': self.name or 'Acta Clasificación',
+                    'origin': self.name,
                 })
                 scrap.action_validate()
-                if scrap.move_ids:
-                    moves |= scrap.move_ids
 
-        self.move_ids = [(4, m.id) for m in moves]
+        self.picking_ids = [(4, p.id) for p in pickings]
 
-    def _make_move(self, product, qty, loc_from, loc_to, name):
-        move = self.env['stock.move'].create({
-            'name': name,
-            'product_id': product.id,
-            'product_uom': product.uom_id.id,
-            'product_uom_qty': qty,
+    def _make_picking(self, picking_type, product, qty, loc_from, loc_to, name):
+        picking = self.env['stock.picking'].create({
+            'picking_type_id': picking_type.id,
             'location_id': loc_from.id,
             'location_dest_id': loc_to.id,
             'origin': self.name,
+            'move_ids': [(0, 0, {
+                'name': name,
+                'product_id': product.id,
+                'product_uom': product.uom_id.id,
+                'product_uom_qty': qty,
+                'location_id': loc_from.id,
+                'location_dest_id': loc_to.id,
+            })],
         })
-        move._action_confirm()
-        move._action_assign()
+        picking.action_confirm()
+        picking.action_assign()
 
-        if move.move_line_ids:
-            move.move_line_ids.write({'quantity': qty})
+        if picking.move_line_ids:
+            picking.move_line_ids.write({'quantity': picking.move_line_ids[0].reserved_uom_qty or qty})
         else:
-            # Virtual locations don't generate reserved lines — create manually
             self.env['stock.move.line'].create({
-                'move_id': move.id,
+                'picking_id': picking.id,
+                'move_id': picking.move_ids[0].id,
                 'product_id': product.id,
                 'product_uom_id': product.uom_id.id,
                 'quantity': qty,
@@ -231,16 +237,16 @@ class ActaClasificacion(models.Model):
                 'location_dest_id': loc_to.id,
             })
 
-        move._action_done()
-        return move
+        picking.with_context(skip_backorder=True, skip_immediate=True).button_validate()
+        return picking
 
-    def action_view_moves(self):
+    def action_view_pickings(self):
         return {
             'type': 'ir.actions.act_window',
-            'name': _('Movimientos de Stock'),
-            'res_model': 'stock.move',
+            'name': _('Transferencias'),
+            'res_model': 'stock.picking',
             'view_mode': 'list,form',
-            'domain': [('id', 'in', self.move_ids.ids)],
+            'domain': [('id', 'in', self.picking_ids.ids)],
         }
 
 
