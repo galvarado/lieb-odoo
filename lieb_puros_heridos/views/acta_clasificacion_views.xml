@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ── Acta de Clasificación – FORM ─────────────────────────────── -->
+    <record id="acta_clasificacion_view_form" model="ir.ui.view">
+        <field name="name">acta.clasificacion.form</field>
+        <field name="model">acta.clasificacion</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_validate"
+                            string="Validar"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state == 'done'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_moves"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-exchange"
+                                invisible="move_count == 0">
+                            <field name="move_count" widget="statinfo" string="Movimientos"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="momento"
+                                   readonly="state == 'done'"/>
+                            <field name="fecha"
+                                   readonly="state == 'done'"/>
+                        </group>
+                        <group>
+                            <field name="ubicacion_id"
+                                   readonly="state == 'done'"/>
+                            <field name="responsable_ids"
+                                   widget="many2many_tags"
+                                   readonly="state == 'done'"/>
+                        </group>
+                    </group>
+
+                    <!-- Líneas de clasificación -->
+                    <notebook>
+                        <page string="Clasificación" name="clasificacion">
+                            <field name="line_ids"
+                                   readonly="state == 'done'"
+                                   widget="one2many">
+                                <list editable="bottom">
+                                    <field name="product_id"/>
+                                    <field name="qty_herido_20"/>
+                                    <field name="qty_herido_40"/>
+                                    <field name="qty_tolerable"/>
+                                    <field name="qty_picado"/>
+                                    <field name="total_clasificado" readonly="1"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notas y Firma" name="notas">
+                            <group>
+                                <field name="observaciones"
+                                       readonly="state == 'done'"
+                                       placeholder="Observaciones adicionales…"/>
+                                <field name="firma_encargada"
+                                       widget="image"
+                                       readonly="state == 'done'"
+                                       optional="show"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ── Acta de Clasificación – LIST ─────────────────────────────── -->
+    <record id="acta_clasificacion_view_list" model="ir.ui.view">
+        <field name="name">acta.clasificacion.list</field>
+        <field name="model">acta.clasificacion</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="fecha"/>
+                <field name="momento"/>
+                <field name="ubicacion_id"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'done'"
+                       decoration-warning="state == 'draft'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ── Acción ────────────────────────────────────────────────────── -->
+    <record id="action_acta_clasificacion" model="ir.actions.act_window">
+        <field name="name">Actas de Clasificación</field>
+        <field name="res_model">acta.clasificacion</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_draft': 1}</field>
+    </record>
+
+    <!-- ── Menú (bajo Inventario → Operaciones) ─────────────────────── -->
+    <menuitem
+        id="menu_acta_clasificacion"
+        name="Actas de Clasificación"
+        parent="stock.menu_stock_root"
+        action="action_acta_clasificacion"
+        sequence="50"/>
+
+</odoo>
