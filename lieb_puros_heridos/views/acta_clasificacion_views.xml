@@ -13,6 +13,12 @@
                             type="object"
                             class="btn-primary"
                             invisible="state == 'done'"/>
+                    <button name="action_cancel"
+                            string="Cancelar"
+                            type="object"
+                            class="btn-secondary"
+                            confirm="¿Cancelar el acta? Se revertirán todos los movimientos de stock generados."
+                            invisible="state == 'draft'"/>
                     <field name="state" widget="statusbar"
                            statusbar_visible="draft,done"/>
                 </header>

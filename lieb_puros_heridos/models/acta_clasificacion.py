@@ -86,6 +86,47 @@ class ActaClasificacion(models.Model):
         self.state = 'done'
         return True
 
+    def action_cancel(self):
+        self.ensure_one()
+        if self.state != 'done':
+            raise UserError(_('Solo se pueden cancelar actas validadas.'))
+
+        int_type = self.env['stock.picking.type'].search(
+            [('code', '=', 'internal')], limit=1
+        )
+
+        # Revertir pickings generados
+        for picking in self.picking_ids:
+            try:
+                return_wizard = self.env['stock.return.picking'].with_context(
+                    active_id=picking.id,
+                    active_ids=picking.ids,
+                ).create({'picking_id': picking.id})
+                return_wizard._onchange_picking_id()
+                action = return_wizard.create_returns()
+                return_pick = self.env['stock.picking'].browse(action['res_id'])
+                return_pick.with_context(
+                    skip_backorder=True, skip_immediate=True
+                ).button_validate()
+            except Exception:
+                pass
+
+        # Revertir scraps de picado
+        scraps = self.env['stock.scrap'].search([('origin', '=', self.name)])
+        for scrap in scraps:
+            self._make_picking(
+                int_type,
+                scrap.product_id,
+                scrap.scrap_qty,
+                scrap.scrap_location_id,
+                scrap.location_id,
+                '%s – reversa picado %s' % (self.name, scrap.product_id.name),
+            )
+
+        self.picking_ids = [(5,)]
+        self.name = _('Nuevo')
+        self.state = 'draft'
+
     def _get_or_create_variant(self, template, attr_value):
         """Find or create product variant for the given Condición attribute value."""
         condicion_attr = self.env.ref('lieb_puros_heridos.product_attribute_condicion')
