@@ -28,9 +28,18 @@ class ProductProduct(models.Model):
                         break
             product.lieb_condicion_discount = discount
 
-    def _compute_lst_price(self):
-        super()._compute_lst_price()
-        for product in self:
+    @api.model
+    def _load_pos_data(self, data):
+        result = super()._load_pos_data(data)
+        condicion_attr = self.env.ref(
+            'lieb_puros_heridos.product_attribute_condicion',
+            raise_if_not_found=False,
+        )
+        if not condicion_attr:
+            return result
+        for product_data in result.get('data', []):
+            product = self.browse(product_data['id'])
             discount = product.lieb_condicion_discount
             if discount:
-                product.lst_price = product.lst_price * (1 - discount / 100.0)
+                product_data['lst_price'] = product_data['lst_price'] * (1 - discount / 100.0)
+        return result
