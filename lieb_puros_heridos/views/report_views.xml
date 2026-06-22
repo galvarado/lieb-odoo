@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         REPORTE 1 – Pivote de Actas de Clasificación
+    ══════════════════════════════════════════════════════════════════════ -->
+
+    <record id="acta_line_view_pivot" model="ir.ui.view">
+        <field name="name">acta.clasificacion.line.pivot</field>
+        <field name="model">acta.clasificacion.line</field>
+        <field name="arch" type="xml">
+            <pivot string="Pivote de Clasificación" disable_linking="False">
+                <field name="product_id" type="row"/>
+                <field name="momento" type="row"/>
+                <field name="qty_herido_20" type="measure"/>
+                <field name="qty_herido_40" type="measure"/>
+                <field name="qty_tolerable" type="measure"/>
+                <field name="qty_picado" type="measure"/>
+                <field name="total_clasificado" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="acta_line_view_graph" model="ir.ui.view">
+        <field name="name">acta.clasificacion.line.graph</field>
+        <field name="model">acta.clasificacion.line</field>
+        <field name="arch" type="xml">
+            <graph string="Clasificación por Producto" type="bar" stacked="True">
+                <field name="product_id" type="row"/>
+                <field name="qty_herido_20" type="measure"/>
+                <field name="qty_herido_40" type="measure"/>
+                <field name="qty_tolerable" type="measure"/>
+                <field name="qty_picado" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="acta_line_view_list" model="ir.ui.view">
+        <field name="name">acta.clasificacion.line.list.report</field>
+        <field name="model">acta.clasificacion.line</field>
+        <field name="arch" type="xml">
+            <list string="Líneas de Clasificación">
+                <field name="fecha"/>
+                <field name="acta_id"/>
+                <field name="momento"/>
+                <field name="product_id"/>
+                <field name="qty_herido_20" sum="Total H20%"/>
+                <field name="qty_herido_40" sum="Total H40%"/>
+                <field name="qty_tolerable" sum="Total Tolerable"/>
+                <field name="qty_picado" sum="Total Picado"/>
+                <field name="total_clasificado" sum="Total"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="acta_line_view_search" model="ir.ui.view">
+        <field name="name">acta.clasificacion.line.search.report</field>
+        <field name="model">acta.clasificacion.line</field>
+        <field name="arch" type="xml">
+            <search string="Buscar clasificaciones">
+                <field name="product_id"/>
+                <field name="acta_id"/>
+                <filter name="momento_1" string="Momento 1 – Importación"
+                        domain="[('momento', '=', '1')]"/>
+                <filter name="momento_2" string="Momento 2 – Recepción Tienda"
+                        domain="[('momento', '=', '2')]"/>
+                <filter name="momento_3" string="Momento 3 – Daño con el Tiempo"
+                        domain="[('momento', '=', '3')]"/>
+                <separator/>
+                <filter name="este_mes" string="Este mes"
+                        domain="[('fecha', '&gt;=', (context_today() + relativedelta(day=1)).strftime('%Y-%m-%d'))]"/>
+                <group expand="1" string="Agrupar por">
+                    <filter name="group_producto" string="Producto"
+                            context="{'group_by': 'product_id'}"/>
+                    <filter name="group_momento" string="Momento"
+                            context="{'group_by': 'momento'}"/>
+                    <filter name="group_fecha" string="Fecha"
+                            context="{'group_by': 'fecha:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_reporte_pivote_actas" model="ir.actions.act_window">
+        <field name="name">Pivote de Actas</field>
+        <field name="res_model">acta.clasificacion.line</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="domain">[('acta_id.state', '=', 'done')]</field>
+        <field name="context">{
+            'search_default_group_producto': 1,
+            'search_default_group_momento': 1
+        }</field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         REPORTE 2 – Stock de Heridos por Tienda
+    ══════════════════════════════════════════════════════════════════════ -->
+
+    <record id="action_reporte_stock_heridos" model="ir.actions.act_window">
+        <field name="name">Stock de Heridos por Tienda</field>
+        <field name="res_model">stock.quant</field>
+        <field name="view_mode">list,pivot</field>
+        <field name="domain" eval="[
+            ('product_id.product_template_attribute_value_ids.product_attribute_value_id', 'in',
+             [ref('lieb_puros_heridos.product_attribute_value_herido_20'),
+              ref('lieb_puros_heridos.product_attribute_value_herido_40'),
+              ref('lieb_puros_heridos.product_attribute_value_tolerable')]),
+            ('location_id.usage', '=', 'internal'),
+        ]"/>
+        <field name="context">{
+            'search_default_group_by_location_id': 1,
+            'search_default_group_by_product_id': 1
+        }</field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         REPORTE 3 – Ventas de Heridos en POS
+    ══════════════════════════════════════════════════════════════════════ -->
+
+    <record id="action_reporte_ventas_heridos" model="ir.actions.act_window">
+        <field name="name">Ventas de Heridos (POS)</field>
+        <field name="res_model">pos.order.line</field>
+        <field name="view_mode">list,pivot,graph</field>
+        <field name="domain" eval="[
+            ('product_id.product_template_attribute_value_ids.product_attribute_value_id', 'in',
+             [ref('lieb_puros_heridos.product_attribute_value_herido_20'),
+              ref('lieb_puros_heridos.product_attribute_value_herido_40'),
+              ref('lieb_puros_heridos.product_attribute_value_tolerable')]),
+            ('order_id.state', 'in', ['done', 'invoiced']),
+        ]"/>
+        <field name="context">{
+            'search_default_group_by_product_id': 1
+        }</field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         MENÚ – Reportes
+    ══════════════════════════════════════════════════════════════════════ -->
+
+    <menuitem
+        id="menu_reportes_heridos"
+        name="Reportes"
+        parent="stock.menu_stock_root"
+        sequence="60"/>
+
+    <menuitem
+        id="menu_reporte_pivote_actas"
+        name="Pivote de Actas"
+        parent="menu_reportes_heridos"
+        action="action_reporte_pivote_actas"
+        sequence="10"/>
+
+    <menuitem
+        id="menu_reporte_stock_heridos"
+        name="Stock de Heridos por Tienda"
+        parent="menu_reportes_heridos"
+        action="action_reporte_stock_heridos"
+        sequence="20"/>
+
+    <menuitem
+        id="menu_reporte_ventas_heridos"
+        name="Ventas de Heridos (POS)"
+        parent="menu_reportes_heridos"
+        action="action_reporte_ventas_heridos"
+        sequence="30"/>
+
+</odoo>

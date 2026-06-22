@@ -259,6 +259,14 @@ class ActaClasificacionLine(models.Model):
         required=True,
         ondelete='cascade',
     )
+    momento = fields.Selection(
+        related='acta_id.momento', store=True, readonly=True,
+        string='Momento',
+    )
+    fecha = fields.Date(
+        related='acta_id.fecha', store=True, readonly=True,
+        string='Fecha',
+    )
     product_id = fields.Many2one(
         'product.template',
         string='Producto',

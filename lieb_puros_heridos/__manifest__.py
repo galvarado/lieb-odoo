@@ -15,6 +15,7 @@
         'data/sequences.xml',
         'views/product_attribute_value_views.xml',
         'views/acta_clasificacion_views.xml',
+        'views/report_views.xml',
     ],
     'post_init_hook': 'post_init_hook',
     'installable': True,
