@@ -31,6 +31,10 @@ class ActaClasificacion(models.Model):
         domain=[('usage', '=', 'internal')],
         required=True,
         tracking=True,
+        default=lambda self: self.env.ref(
+            'lieb_puros_heridos.location_alm_revision_danados',
+            raise_if_not_found=False,
+        ),
     )
     responsable_ids = fields.Many2many(
         'res.users',
