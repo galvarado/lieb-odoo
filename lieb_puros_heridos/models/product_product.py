@@ -28,11 +28,9 @@ class ProductProduct(models.Model):
                         break
             product.lieb_condicion_discount = discount
 
-    def price_compute(self, price_type, uom=None, currency=None, company=None, date=False):
-        prices = super().price_compute(price_type, uom=uom, currency=currency, company=company, date=date)
-        if price_type == 'list_price':
-            for product in self:
-                discount = product.lieb_condicion_discount
-                if discount:
-                    prices[product.id] = prices[product.id] * (1 - discount / 100.0)
-        return prices
+    def _compute_lst_price(self):
+        super()._compute_lst_price()
+        for product in self:
+            discount = product.lieb_condicion_discount
+            if discount:
+                product.lst_price = product.lst_price * (1 - discount / 100.0)
