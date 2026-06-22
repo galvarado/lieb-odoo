@@ -279,6 +279,7 @@ class ActaClasificacionLine(models.Model):
     total_clasificado = fields.Float(
         string='Total',
         compute='_compute_total',
+        store=True,
         digits=(12, 2),
     )
 
