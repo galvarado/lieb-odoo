@@ -109,13 +109,23 @@ class ActaClasificacion(models.Model):
                 'No se encontró el valor de atributo "%s" en "%s".'
             ) % (attr_value.name, template.name))
 
-        if not ptav.ptav_active:
-            ptav.ptav_active = True
-            self.env.flush_all()
+        # Buscar primero si ya existe la variante (activa o archivada)
+        variant = self.env['product.product'].with_context(active_test=False).search([
+            ('product_tmpl_id', '=', template.id),
+            ('product_template_attribute_value_ids', 'in', [ptav.id]),
+        ], limit=1)
 
-        template.invalidate_recordset()
-        template._create_variant_ids()
+        if variant:
+            if not variant.active:
+                variant.active = True
+            return variant
+
+        # No existe — activar PTAV y forzar creación
+        if not ptav.ptav_active:
+            ptav.sudo().write({'ptav_active': True})
+        template.sudo()._create_variant_ids()
         self.env.flush_all()
+        self.env.invalidate_all()
 
         variant = self.env['product.product'].with_context(active_test=False).search([
             ('product_tmpl_id', '=', template.id),
