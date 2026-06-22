@@ -16,12 +16,6 @@
         'views/product_attribute_value_views.xml',
         'views/acta_clasificacion_views.xml',
     ],
-    'assets': {
-        'point_of_sale._assets_pos': [
-            'lieb_puros_heridos/static/src/condicion_buttons.xml',
-            'lieb_puros_heridos/static/src/condicion_buttons.js',
-        ],
-    },
     'post_init_hook': 'post_init_hook',
     'installable': True,
     'application': False,
