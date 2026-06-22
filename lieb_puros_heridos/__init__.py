@@ -1,3 +1,6 @@
+from . import models
+
+
 def post_init_hook(env):
     warehouse = env['stock.warehouse'].search([('code', '=', 'TSF')], limit=1)
     if not warehouse:
