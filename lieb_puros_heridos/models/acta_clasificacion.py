@@ -123,8 +123,6 @@ class ActaClasificacion(models.Model):
         # No existe — activar PTAV y forzar creación
         if not ptav.ptav_active:
             ptav.sudo().write({'ptav_active': True})
-        # flush escribe a DB, invalidate limpia caché para que _create_variant_ids
-        # lea ptav_active=True recién guardado
         self.env.flush_all()
         self.env.invalidate_all()
         template.sudo()._create_variant_ids()
@@ -137,13 +135,15 @@ class ActaClasificacion(models.Model):
         ], limit=1)
 
         if not variant:
-            raise UserError(_(
-                'No se pudo crear la variante "%s" para "%s". '
-                'Verifica que el producto tenga el atributo Condición activo.'
-            ) % (attr_value.name, template.name))
+            # _create_variant_ids no la creó — creación directa
+            variant = self.env['product.product'].sudo().create({
+                'product_tmpl_id': template.id,
+                'product_template_attribute_value_ids': [(4, ptav.id)],
+            })
+            self.env.flush_all()
 
         if not variant.active:
-            variant.active = True
+            variant.sudo().write({'active': True})
 
         return variant
 
