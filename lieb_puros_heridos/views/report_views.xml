@@ -134,6 +134,20 @@
     </record>
 
     <!-- ══════════════════════════════════════════════════════════════════
+         REPORTE 4 – Picado / Desecho
+    ══════════════════════════════════════════════════════════════════════ -->
+
+    <record id="action_reporte_picado" model="ir.actions.act_window">
+        <field name="name">Picado / Desecho</field>
+        <field name="res_model">stock.scrap</field>
+        <field name="view_mode">list,pivot,graph</field>
+        <field name="domain">[('origin', 'like', 'ACTA/')]</field>
+        <field name="context">{
+            'search_default_group_by_product_id': 1
+        }</field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
          MENÚ – Reportes
     ══════════════════════════════════════════════════════════════════════ -->
 
@@ -163,5 +177,12 @@
         parent="menu_reportes_heridos"
         action="action_reporte_ventas_heridos"
         sequence="30"/>
+
+    <menuitem
+        id="menu_reporte_picado"
+        name="Picado / Desecho"
+        parent="menu_reportes_heridos"
+        action="action_reporte_picado"
+        sequence="40"/>
 
 </odoo>
