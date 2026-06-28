@@ -7,6 +7,7 @@
     'license': 'LGPL-3',
     'depends': ['stock', 'product', 'sale', 'point_of_sale'],
     'data': [
+        'security/groups.xml',
         'security/ir.model.access.csv',
         'data/product_attribute.xml',
         'data/product_category.xml',

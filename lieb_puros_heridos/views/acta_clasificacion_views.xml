@@ -8,19 +8,29 @@
         <field name="arch" type="xml">
             <form>
                 <header>
+                    <button name="action_submit"
+                            string="Enviar a Aprobación"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_approve"
+                            string="Aprobar"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'pending'"/>
                     <button name="action_validate"
                             string="Validar"
                             type="object"
                             class="btn-primary"
-                            invisible="state == 'done'"/>
+                            invisible="state != 'approved'"/>
                     <button name="action_cancel"
                             string="Cancelar"
                             type="object"
                             class="btn-secondary"
                             confirm="¿Cancelar el acta? Se revertirán todos los movimientos de stock generados."
-                            invisible="state == 'draft'"/>
+                            invisible="state != 'done'"/>
                     <field name="state" widget="statusbar"
-                           statusbar_visible="draft,done"/>
+                           statusbar_visible="draft,pending,approved,done"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
@@ -40,16 +50,28 @@
                     <group>
                         <group>
                             <field name="momento"
-                                   readonly="state == 'done'"/>
+                                   readonly="state != 'draft'"/>
                             <field name="fecha"
-                                   readonly="state == 'done'"/>
+                                   readonly="state != 'draft'"/>
                         </group>
                         <group>
                             <field name="ubicacion_id"
-                                   readonly="state == 'done'"/>
+                                   readonly="state != 'draft'"/>
                             <field name="responsable_ids"
                                    widget="many2many_tags"
-                                   readonly="state == 'done'"/>
+                                   readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+
+                    <!-- Panel de aprobaciones -->
+                    <group string="Aprobaciones" invisible="state == 'draft'">
+                        <group>
+                            <field name="approver_1_id" readonly="1"/>
+                            <field name="approver_1_date" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="approver_2_id" readonly="1"/>
+                            <field name="approver_2_date" readonly="1"/>
                         </group>
                     </group>
 
@@ -57,7 +79,7 @@
                     <notebook>
                         <page string="Clasificación" name="clasificacion">
                             <field name="line_ids"
-                                   readonly="state == 'done'"
+                                   readonly="state != 'draft'"
                                    widget="one2many">
                                 <list editable="bottom">
                                     <field name="product_id"/>
@@ -72,11 +94,11 @@
                         <page string="Notas y Firma" name="notas">
                             <group>
                                 <field name="observaciones"
-                                       readonly="state == 'done'"
+                                       readonly="state != 'draft'"
                                        placeholder="Observaciones adicionales…"/>
                                 <field name="firma_encargada"
                                        widget="image"
-                                       readonly="state == 'done'"
+                                       readonly="state != 'draft'"
                                        optional="show"/>
                             </group>
                         </page>
@@ -99,7 +121,9 @@
                 <field name="ubicacion_id"/>
                 <field name="state" widget="badge"
                        decoration-success="state == 'done'"
-                       decoration-warning="state == 'draft'"/>
+                       decoration-info="state == 'approved'"
+                       decoration-warning="state == 'pending'"
+                       decoration-muted="state == 'draft'"/>
             </list>
         </field>
     </record>

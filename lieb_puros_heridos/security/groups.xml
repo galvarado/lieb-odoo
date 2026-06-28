@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="group_acta_approver" model="res.groups">
+        <field name="name">Aprobador de Actas de Clasificación</field>
+        <field name="category_id" ref="base.module_category_inventory_inventory"/>
+        <field name="comment">Usuarios autorizados para aprobar actas de clasificación de puros heridos. Se requieren dos aprobadores distintos pertenecientes a este grupo.</field>
+    </record>
+</odoo>

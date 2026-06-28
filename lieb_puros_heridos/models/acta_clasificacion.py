@@ -47,8 +47,22 @@ class ActaClasificacion(models.Model):
     observaciones = fields.Text(string='Observaciones')
     state = fields.Selection([
         ('draft', 'Borrador'),
+        ('pending', 'En Aprobación'),
+        ('approved', 'Aprobada'),
         ('done', 'Validada'),
     ], default='draft', tracking=True, string='Estado')
+    approver_1_id = fields.Many2one(
+        'res.users', string='1ª Aprobación', readonly=True, copy=False,
+    )
+    approver_1_date = fields.Datetime(
+        string='Fecha 1ª Aprobación', readonly=True, copy=False,
+    )
+    approver_2_id = fields.Many2one(
+        'res.users', string='2ª Aprobación', readonly=True, copy=False,
+    )
+    approver_2_date = fields.Datetime(
+        string='Fecha 2ª Aprobación', readonly=True, copy=False,
+    )
     line_ids = fields.One2many(
         'acta.clasificacion.line',
         'acta_id',
@@ -72,13 +86,43 @@ class ActaClasificacion(models.Model):
         for acta in self:
             acta.picking_count = len(acta.picking_ids)
 
-    def action_validate(self):
+    def action_submit(self):
         self.ensure_one()
         if self.state != 'draft':
-            raise UserError(_('El acta ya fue validada.'))
+            raise UserError(_('El acta ya fue enviada a aprobación.'))
         if not self.line_ids:
             raise UserError(_('Agregue al menos una línea de clasificación.'))
-        # Asignar folio ANTES de generar movimientos para que el origen sea correcto
+        self.state = 'pending'
+
+    def action_approve(self):
+        self.ensure_one()
+        if self.state != 'pending':
+            raise UserError(_('El acta no está en espera de aprobación.'))
+        if not self.env.user.has_group('lieb_puros_heridos.group_acta_approver'):
+            raise UserError(_(
+                'No tienes autorización para aprobar actas de clasificación. '
+                'Contacta al administrador para obtener el permiso de "Aprobador de Actas de Clasificación".'
+            ))
+        user = self.env.user
+        if not self.approver_1_id:
+            self.approver_1_id = user
+            self.approver_1_date = fields.Datetime.now()
+            self.message_post(body=_('Primera aprobación registrada por %s.') % user.name)
+        elif self.approver_1_id == user:
+            raise UserError(_(
+                'Ya registraste la primera aprobación. '
+                'Se requiere un segundo aprobador diferente.'
+            ))
+        else:
+            self.approver_2_id = user
+            self.approver_2_date = fields.Datetime.now()
+            self.state = 'approved'
+            self.message_post(body=_('Segunda aprobación registrada por %s. Acta lista para validar.') % user.name)
+
+    def action_validate(self):
+        self.ensure_one()
+        if self.state != 'approved':
+            raise UserError(_('El acta debe tener dos aprobaciones antes de validar.'))
         seq = self.env['ir.sequence'].next_by_code('acta.clasificacion')
         if seq:
             self.name = seq
@@ -244,7 +288,10 @@ class ActaClasificacion(models.Model):
                     'scrap_location_id': loc_picado.id,
                     'origin': self.name,
                 })
-                scrap.action_validate()
+                # do_scrap() bypasses the insufficient-qty wizard that action_validate()
+                # returns when no on-hand stock is found for the variant, which would
+                # leave the scrap in draft state silently.
+                scrap.do_scrap()
 
         self.picking_ids = [(4, p.id) for p in pickings]
 
