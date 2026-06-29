@@ -95,11 +95,6 @@ class WizardRecepcionSurtido(models.TransientModel):
                     # Nada recibido de este move — cancelar
                     move._action_cancel()
 
-            # Asegurar company_id en move lines antes de validar
-            picking.move_line_ids.filtered(lambda ml: not ml.company_id).write(
-                {'company_id': company.id}
-            )
-
             # Validar picking si aún tiene moves activos
             active_moves = picking.move_ids.filtered(
                 lambda m: m.state not in ('done', 'cancel')
@@ -133,23 +128,20 @@ class WizardRecepcionSurtido(models.TransientModel):
                     'location_dest_id': loc_dest_return.id,
                     'origin': self.surtido_id.name,
                     'company_id': company.id,
-                    'move_ids': [(0, 0, {
-                        'name': _('Rechazo: %s') % line.product_id.display_name,
-                        'product_id': line.product_id.id,
-                        'product_uom': line.product_id.uom_id.id,
-                        'product_uom_qty': qty_rechazada,
-                        'location_id': loc_transit.id,
-                        'location_dest_id': loc_dest_return.id,
-                        'company_id': company.id,
-                        'motivo_retorno_id': line.motivo_retorno_id.id,
-                        'nota_rechazo': line.nota,
-                    })],
+                })
+                self.env['stock.move'].create({
+                    'name': _('Rechazo: %s') % line.product_id.display_name,
+                    'picking_id': return_picking.id,
+                    'product_id': line.product_id.id,
+                    'product_uom': line.product_id.uom_id.id,
+                    'product_uom_qty': qty_rechazada,
+                    'location_id': loc_transit.id,
+                    'location_dest_id': loc_dest_return.id,
+                    'motivo_retorno_id': line.motivo_retorno_id.id,
+                    'nota_rechazo': line.nota,
                 })
                 return_picking.action_confirm()
                 return_picking.action_assign()
-                return_picking.move_line_ids.filtered(lambda ml: not ml.company_id).write(
-                    {'company_id': company.id}
-                )
                 if not return_picking.move_line_ids:
                     self.env['stock.move.line'].create({
                         'picking_id': return_picking.id,
