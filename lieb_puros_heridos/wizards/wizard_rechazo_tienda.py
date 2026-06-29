@@ -51,13 +51,14 @@ class WizardRechazoTienda(models.TransientModel):
                     'La cantidad a rechazar (%s) supera la disponible (%s) en "%s".'
                 ) % (line.qty_rechazada, line.qty_disponible, line.product_id.display_name))
 
+        company = self.env.company
         loc_transit = self.env.ref('lieb_puros_heridos.location_transit_surtido')
         loc_revision = self.env.ref('lieb_puros_heridos.location_alm_revision_danados')
         loc_heridos = self.env.ref('lieb_puros_heridos.location_alm_heridos')
 
         int_type = self.env['stock.picking.type'].search(
-            [('code', '=', 'internal')], limit=1
-        )
+            [('code', '=', 'internal'), ('company_id', '=', company.id)], limit=1
+        ) or self.env['stock.picking.type'].search([('code', '=', 'internal')], limit=1)
 
         for line in lines_con_rechazo:
             condicion = line.product_id.lieb_condicion or ''
@@ -82,6 +83,7 @@ class WizardRechazoTienda(models.TransientModel):
                 'location_id': loc_transit.id,
                 'location_dest_id': loc_dest_return.id,
                 'origin': self.picking_id.origin or self.picking_id.name,
+                'company_id': company.id,
                 'move_ids': [(0, 0, {
                     'name': _('Rechazo: %s') % line.product_id.display_name,
                     'product_id': line.product_id.id,
@@ -89,6 +91,7 @@ class WizardRechazoTienda(models.TransientModel):
                     'product_uom_qty': line.qty_rechazada,
                     'location_id': loc_transit.id,
                     'location_dest_id': loc_dest_return.id,
+                    'company_id': company.id,
                     'motivo_retorno_id': line.motivo_retorno_id.id,
                     'nota_rechazo': line.nota,
                 })],

@@ -62,12 +62,13 @@ class WizardRecepcionSurtido(models.TransientModel):
         for line in self.line_ids:
             pickings_lines.setdefault(line.picking_id.id, []).append(line)
 
+        company = self.env.company
         loc_transit = self.env.ref('lieb_puros_heridos.location_transit_surtido')
         loc_revision = self.env.ref('lieb_puros_heridos.location_alm_revision_danados')
         loc_heridos = self.env.ref('lieb_puros_heridos.location_alm_heridos')
         int_type = self.env['stock.picking.type'].search(
-            [('code', '=', 'internal')], limit=1
-        )
+            [('code', '=', 'internal'), ('company_id', '=', company.id)], limit=1
+        ) or self.env['stock.picking.type'].search([('code', '=', 'internal')], limit=1)
 
         for picking_id, lines in pickings_lines.items():
             picking = self.env['stock.picking'].browse(picking_id)
@@ -126,6 +127,7 @@ class WizardRecepcionSurtido(models.TransientModel):
                     'location_id': loc_transit.id,
                     'location_dest_id': loc_dest_return.id,
                     'origin': self.surtido_id.name,
+                    'company_id': company.id,
                     'move_ids': [(0, 0, {
                         'name': _('Rechazo: %s') % line.product_id.display_name,
                         'product_id': line.product_id.id,
@@ -133,6 +135,7 @@ class WizardRecepcionSurtido(models.TransientModel):
                         'product_uom_qty': qty_rechazada,
                         'location_id': loc_transit.id,
                         'location_dest_id': loc_dest_return.id,
+                        'company_id': company.id,
                         'motivo_retorno_id': line.motivo_retorno_id.id,
                         'nota_rechazo': line.nota,
                     })],
