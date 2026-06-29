@@ -21,6 +21,7 @@
         'views/surtido_tienda_views.xml',
         'views/requisicion_surtido_views.xml',
         'views/rechazo_tienda_views.xml',
+        'views/report_surtido.xml',
     ],
     'assets': {
         'point_of_sale._assets_pos': [

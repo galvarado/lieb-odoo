@@ -323,6 +323,47 @@ class SurtidoTienda(models.Model):
             'domain': [('id', 'in', pickings.ids)],
         }
 
+    def _get_report_lines(self):
+        """Consolidate sent/received/rejected data per product for the receipt report."""
+        loc_transit = self.env.ref('lieb_puros_heridos.location_transit_surtido')
+
+        # Moves received: done IN pickings
+        received_by_product = {}
+        for picking in self.picking_in_ids.filtered(lambda p: p.state == 'done'):
+            for ml in picking.move_line_ids:
+                pid = ml.product_id.id
+                received_by_product[pid] = received_by_product.get(pid, 0.0) + ml.quantity
+
+        # Moves rejected: return pickings from transit (origin = surtido name)
+        return_pickings = self.env['stock.picking'].search([
+            ('origin', '=', self.name),
+            ('location_id', '=', loc_transit.id),
+            ('state', '=', 'done'),
+        ])
+        rejected_by_product = {}
+        motivo_by_product = {}
+        for picking in return_pickings:
+            for move in picking.move_ids:
+                pid = move.product_id.id
+                rejected_by_product[pid] = rejected_by_product.get(pid, 0.0) + move.product_uom_qty
+                if move.motivo_retorno_id and pid not in motivo_by_product:
+                    motivo_by_product[pid] = move.motivo_retorno_id.name
+
+        lines = []
+        for line in self.line_ids:
+            pid = line.product_id.id
+            recibida = received_by_product.get(pid, 0.0)
+            rechazada = rejected_by_product.get(pid, 0.0)
+            lines.append({
+                'product': line.product_id.display_name,
+                'condicion': line.condicion or '',
+                'enviada': line.qty,
+                'recibida': recibida,
+                'rechazada': rechazada,
+                'motivo': motivo_by_product.get(pid, ''),
+            })
+        return lines
+
 
 class SurtidoTiendaLine(models.Model):
     _name = 'surtido.tienda.line'

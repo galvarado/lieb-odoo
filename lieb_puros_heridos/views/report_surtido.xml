@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ── Acción de reporte ─────────────────────────────────────────── -->
+    <record id="action_report_surtido_recepcion" model="ir.actions.report">
+        <field name="name">Documento de Recepción</field>
+        <field name="model">surtido.tienda</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">lieb_puros_heridos.report_surtido_recepcion</field>
+        <field name="report_file">lieb_puros_heridos.report_surtido_recepcion</field>
+        <field name="binding_model_id" ref="model_surtido_tienda"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- ── Template QWeb ─────────────────────────────────────────────── -->
+    <template id="report_surtido_recepcion">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="surtido">
+                <t t-call="web.external_layout">
+                    <div class="page">
+
+                        <h2 style="text-align:center; margin-bottom:4px;">
+                            Documento de Recepción de Surtido
+                        </h2>
+                        <h3 style="text-align:center; color:#666; margin-top:0;">
+                            <t t-esc="surtido.name"/>
+                        </h3>
+
+                        <hr/>
+
+                        <!-- Encabezado -->
+                        <table width="100%" style="margin-bottom:16px; font-size:13px;">
+                            <tr>
+                                <td width="50%">
+                                    <strong>Fecha:</strong>
+                                    <t t-esc="surtido.date"/>
+                                </td>
+                                <td width="50%">
+                                    <strong>Estado:</strong>
+                                    <t t-esc="dict(surtido._fields['state'].selection).get(surtido.state, surtido.state)"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Almacén Origen:</strong>
+                                    <t t-esc="surtido.warehouse_src_id.name"/>
+                                </td>
+                                <td>
+                                    <strong>Tienda Destino:</strong>
+                                    <t t-esc="surtido.warehouse_dest_id.name"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Chofer:</strong>
+                                    <t t-esc="surtido.chofer or '—'"/>
+                                </td>
+                                <td t-if="surtido.requisicion_id">
+                                    <strong>Requisición:</strong>
+                                    <t t-esc="surtido.requisicion_id.name"/>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Tabla de líneas -->
+                        <table class="table table-sm table-bordered" style="font-size:12px;">
+                            <thead style="background:#f0f0f0;">
+                                <tr>
+                                    <th>Producto</th>
+                                    <th style="text-align:center;">Condición</th>
+                                    <th style="text-align:center;">Enviada</th>
+                                    <th style="text-align:center;">Recibida</th>
+                                    <th style="text-align:center;">Rechazada</th>
+                                    <th>Motivo de Rechazo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-set="report_lines" t-value="surtido._get_report_lines()"/>
+                                <t t-foreach="report_lines" t-as="line">
+                                    <tr t-attf-style="#{line['rechazada'] &gt; 0 and 'background:#fff3f3;' or ''}">
+                                        <td><t t-esc="line['product']"/></td>
+                                        <td style="text-align:center;"><t t-esc="line['condicion']"/></td>
+                                        <td style="text-align:center;"><t t-esc="line['enviada']"/></td>
+                                        <td style="text-align:center;"><t t-esc="line['recibida']"/></td>
+                                        <td style="text-align:center;"
+                                            t-attf-style="#{line['rechazada'] &gt; 0 and 'color:red; font-weight:bold;' or ''}">
+                                            <t t-esc="line['rechazada']"/>
+                                        </td>
+                                        <td><t t-esc="line['motivo']"/></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                            <tfoot style="background:#f0f0f0; font-weight:bold;">
+                                <tr>
+                                    <td colspan="2">Total</td>
+                                    <td style="text-align:center;">
+                                        <t t-esc="sum(l['enviada'] for l in report_lines)"/>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <t t-esc="sum(l['recibida'] for l in report_lines)"/>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <t t-esc="sum(l['rechazada'] for l in report_lines)"/>
+                                    </td>
+                                    <td/>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <!-- Observaciones -->
+                        <t t-if="surtido.observaciones">
+                            <div style="margin-top:12px;">
+                                <strong>Observaciones:</strong>
+                                <p><t t-esc="surtido.observaciones"/></p>
+                            </div>
+                        </t>
+
+                        <!-- Firmas -->
+                        <table width="100%" style="margin-top:48px; font-size:12px;">
+                            <tr>
+                                <td width="33%" style="text-align:center; padding:0 16px;">
+                                    <t t-if="surtido.firma_chofer">
+                                        <img t-att-src="'data:image/png;base64,' + surtido.firma_chofer.decode()"
+                                             style="max-height:60px; max-width:120px;"/>
+                                        <br/>
+                                    </t>
+                                    <div style="border-top:1px solid #000; padding-top:4px; margin-top:8px;">
+                                        Firma Chofer<br/>
+                                        <t t-esc="surtido.chofer or ''"/>
+                                    </div>
+                                </td>
+                                <td width="33%" style="text-align:center; padding:0 16px;">
+                                    <div style="border-top:1px solid #000; padding-top:4px; margin-top:68px;">
+                                        Entregado por (Almacén)
+                                    </div>
+                                </td>
+                                <td width="33%" style="text-align:center; padding:0 16px;">
+                                    <div style="border-top:1px solid #000; padding-top:4px; margin-top:68px;">
+                                        Recibido por (Tienda)<br/>
+                                        <t t-esc="surtido.warehouse_dest_id.name"/>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>
