@@ -196,6 +196,7 @@ class SurtidoTienda(models.Model):
         self.message_post(body=_('Surtido enviado. Chofer: %s.') % self.chofer)
 
     def _create_picking(self, picking_type, loc_from, loc_to, product_qtys, immediate=False):
+        company = self.env.company
         moves = [(0, 0, {
             'name': self.name,
             'product_id': product.id,
@@ -203,6 +204,7 @@ class SurtidoTienda(models.Model):
             'product_uom_qty': qty,
             'location_id': loc_from.id,
             'location_dest_id': loc_to.id,
+            'company_id': company.id,
         }) for product, qty in product_qtys]
 
         picking = self.env['stock.picking'].create({
@@ -210,6 +212,7 @@ class SurtidoTienda(models.Model):
             'location_id': loc_from.id,
             'location_dest_id': loc_to.id,
             'origin': self.name,
+            'company_id': company.id,
             'move_ids': moves,
         })
         picking.action_confirm()
