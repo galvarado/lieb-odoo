@@ -96,7 +96,9 @@ Verificar que estado de requisición cambió a **Surtida**.
 
 ### Validar picking entrante
 
-Inventario → Operaciones → Transferencias (desde TIENDA1 o buscar por origen `SURT/XXXX/0001`)
+Desde el surtido en **En Tránsito** → botón **Entradas (X pendientes)**
+
+O bien: Inventario → Operaciones → **Interno** → filtrar por origen `SURT/XXXX/0001`
 
 - Abrir el picking `Tránsito Surtido → TIENDA1/Existencias`.
 - Verificar que las cantidades están asignadas.
@@ -159,7 +161,7 @@ Inventario → Configuración → Ubicaciones → `Tránsito Surtido` → Existe
 
 ### Verificar motivo en el picking de retorno
 
-Inventario → Operaciones → Transferencias → buscar picking con origen `SURT/XXXX/0001` hacia `Revisión-Dañados`
+Inventario → Operaciones → **Interno** → buscar picking con origen `SURT/XXXX/0001` hacia `Revisión-Dañados`
 
 - Abrir el picking → ver movimiento → campo **Motivo de Rechazo**: "Daño en capa"
 - Campo **Nota de Rechazo**: el texto ingresado.
