@@ -270,7 +270,7 @@ class SurtidoTienda(models.Model):
             raise UserError(_('Solo se puede recibir un surtido en tránsito.'))
         return {
             'type': 'ir.actions.act_window',
-            'name': _('Recibir con Revisión'),
+            'name': _('Recepción Parcial'),
             'res_model': 'wizard.recepcion.surtido',
             'view_mode': 'form',
             'target': 'new',

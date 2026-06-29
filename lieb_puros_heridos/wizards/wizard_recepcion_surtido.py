@@ -41,6 +41,8 @@ class WizardRecepcionSurtido(models.TransientModel):
             raise UserError(_('No hay líneas para procesar.'))
 
         for line in self.line_ids:
+            if not line.product_id or not line.move_id:
+                continue
             if line.qty_recibida < 0:
                 raise ValidationError(_(
                     'Cantidad recibida no puede ser negativa: %s'

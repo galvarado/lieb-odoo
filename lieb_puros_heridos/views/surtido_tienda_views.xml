@@ -15,7 +15,7 @@
                             confirm="¿Confirmar envío? El stock saldrá del almacén y quedará en tránsito hasta que la tienda reciba."
                             invisible="state != 'draft'"/>
                     <button name="action_receive_with_review"
-                            string="Recibir con Revisión"
+                            string="Recepción Parcial"
                             type="object"
                             class="btn-primary"
                             invisible="state != 'sent'"/>
