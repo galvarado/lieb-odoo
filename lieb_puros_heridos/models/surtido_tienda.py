@@ -264,8 +264,33 @@ class SurtidoTienda(models.Model):
         self.state = 'cancelled'
         self.message_post(body=_('Surtido cancelado.'))
 
+    def action_receive_all(self):
+        self.ensure_one()
+        if self.state != 'sent':
+            raise UserError(_('Solo se puede recibir un surtido en tránsito.'))
+        pending = self.picking_in_ids.filtered(lambda p: p.state not in ('done', 'cancel'))
+        if not pending:
+            raise UserError(_('No hay pickings pendientes de recepción.'))
+        for picking in pending:
+            if picking.move_line_ids:
+                for ml in picking.move_line_ids:
+                    ml.quantity = ml.move_id.product_uom_qty
+            else:
+                for move in picking.move_ids:
+                    self.env['stock.move.line'].create({
+                        'picking_id': picking.id,
+                        'move_id': move.id,
+                        'product_id': move.product_id.id,
+                        'product_uom_id': move.product_uom.id,
+                        'quantity': move.product_uom_qty,
+                        'location_id': move.location_id.id,
+                        'location_dest_id': move.location_dest_id.id,
+                    })
+            picking.with_context(skip_backorder=True, skip_immediate=True).button_validate()
+        self.action_check_received()
+        self.message_post(body=_('Recepción completa registrada.'))
+
     def action_check_received(self):
-        """Called from cron or manually to mark surtido as received."""
         for rec in self.filtered(lambda s: s.state == 'sent'):
             if all(p.state == 'done' for p in rec.picking_in_ids):
                 rec.state = 'received'
