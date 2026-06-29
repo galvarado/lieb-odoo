@@ -229,6 +229,7 @@ class SurtidoTienda(models.Model):
                         'quantity': move.product_uom_qty,
                         'location_id': move.location_id.id,
                         'location_dest_id': move.location_dest_id.id,
+                        'company_id': picking.company_id.id,
                     })
             picking.with_context(skip_backorder=True, skip_immediate=True).button_validate()
 
@@ -298,6 +299,7 @@ class SurtidoTienda(models.Model):
                         'quantity': move.product_uom_qty,
                         'location_id': move.location_id.id,
                         'location_dest_id': move.location_dest_id.id,
+                        'company_id': picking.company_id.id,
                     })
             picking.with_context(skip_backorder=True, skip_immediate=True).button_validate()
         self.action_check_received()

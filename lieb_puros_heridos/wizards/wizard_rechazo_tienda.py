@@ -105,6 +105,7 @@ class WizardRechazoTienda(models.TransientModel):
                     'quantity': line.qty_rechazada,
                     'location_id': loc_transit.id,
                     'location_dest_id': loc_dest_return.id,
+                    'company_id': return_picking.company_id.id,
                 })
             # El almacén valida manualmente cuando recibe físicamente las piezas
 
