@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Secuencias -->
+        <record id="seq_surtido_tienda" model="ir.sequence">
+            <field name="name">Surtido a Tienda</field>
+            <field name="code">surtido.tienda</field>
+            <field name="prefix">SURT/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_requisicion_surtido" model="ir.sequence">
+            <field name="name">Requisición de Surtido</field>
+            <field name="code">requisicion.surtido</field>
+            <field name="prefix">REQSURT/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Motivos de retorno tipificados -->
+        <record id="motivo_dano_pie" model="motivo.retorno">
+            <field name="name">Daño en pie</field>
+            <field name="tipo">dano</field>
+            <field name="sequence">1</field>
+        </record>
+
+        <record id="motivo_dano_capa" model="motivo.retorno">
+            <field name="name">Daño en capa</field>
+            <field name="tipo">dano</field>
+            <field name="sequence">2</field>
+        </record>
+
+        <record id="motivo_dano_cabeza" model="motivo.retorno">
+            <field name="name">Daño en cabeza / boquilla</field>
+            <field name="tipo">dano</field>
+            <field name="sequence">3</field>
+        </record>
+
+        <record id="motivo_varias_imperfecciones" model="motivo.retorno">
+            <field name="name">Varias imperfecciones</field>
+            <field name="tipo">dano</field>
+            <field name="sequence">4</field>
+        </record>
+
+        <record id="motivo_diferencia_cantidad" model="motivo.retorno">
+            <field name="name">Diferencia de cantidad</field>
+            <field name="tipo">discrepancia</field>
+            <field name="sequence">10</field>
+        </record>
+
+        <record id="motivo_error_surtido" model="motivo.retorno">
+            <field name="name">Error de surtido</field>
+            <field name="tipo">discrepancia</field>
+            <field name="sequence">11</field>
+        </record>
+
+        <record id="motivo_formato_incorrecto" model="motivo.retorno">
+            <field name="name">Formato incorrecto</field>
+            <field name="tipo">discrepancia</field>
+            <field name="sequence">12</field>
+        </record>
+
+    </data>
+</odoo>

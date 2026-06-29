@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ── Surtido a Tienda – FORM ───────────────────────────────────── -->
+    <record id="surtido_tienda_view_form" model="ir.ui.view">
+        <field name="name">surtido.tienda.form</field>
+        <field name="model">surtido.tienda</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_send"
+                            string="Enviar a Tienda"
+                            type="object"
+                            class="btn-primary"
+                            confirm="¿Confirmar envío? El stock saldrá del almacén y quedará en tránsito hasta que la tienda reciba."
+                            invisible="state != 'draft'"/>
+                    <button name="action_cancel"
+                            string="Cancelar"
+                            type="object"
+                            class="btn-secondary"
+                            confirm="¿Cancelar surtido? Los movimientos generados serán revertidos."
+                            invisible="state not in ('draft', 'sent')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,sent,received"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_pickings_out"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-sign-out"
+                                invisible="picking_out_count == 0">
+                            <field name="picking_out_count" widget="statinfo" string="Salidas"/>
+                        </button>
+                        <button name="action_view_pickings_in"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-sign-in"
+                                invisible="picking_in_count == 0">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="picking_in_count"/>
+                                </span>
+                                <span class="o_stat_text">Entradas</span>
+                                <span class="o_stat_text"
+                                      invisible="transit_count == 0"
+                                      style="color: orange;">
+                                    (<field name="transit_count"/> pendientes)
+                                </span>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="date" readonly="state != 'draft'"/>
+                            <field name="warehouse_src_id" readonly="state != 'draft'"/>
+                            <field name="warehouse_dest_id" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="requisicion_id" readonly="state != 'draft'"/>
+                            <field name="chofer" readonly="state != 'draft'"/>
+                            <field name="firma_chofer"
+                                   widget="image"
+                                   readonly="state != 'draft'"
+                                   optional="show"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Líneas" name="lineas">
+                            <field name="line_ids"
+                                   readonly="state != 'draft'"
+                                   widget="one2many">
+                                <list editable="bottom">
+                                    <field name="product_id"/>
+                                    <field name="condicion" optional="show"/>
+                                    <field name="qty"/>
+                                    <field name="location_src_id" optional="show" readonly="1"/>
+                                    <field name="location_dest_id" optional="show" readonly="1"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notas" name="notas">
+                            <field name="observaciones"
+                                   readonly="state != 'draft'"
+                                   placeholder="Observaciones adicionales…"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ── Surtido a Tienda – LIST ───────────────────────────────────── -->
+    <record id="surtido_tienda_view_list" model="ir.ui.view">
+        <field name="name">surtido.tienda.list</field>
+        <field name="model">surtido.tienda</field>
+        <field name="arch" type="xml">
+            <list decoration-warning="state == 'sent' and transit_count &gt; 0"
+                  decoration-success="state == 'received'"
+                  decoration-muted="state == 'cancelled'">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="warehouse_src_id"/>
+                <field name="warehouse_dest_id"/>
+                <field name="chofer"/>
+                <field name="requisicion_id" optional="show"/>
+                <field name="transit_count" string="Pendientes" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'received'"
+                       decoration-warning="state == 'sent'"
+                       decoration-muted="state in ('draft', 'cancelled')"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ── Vista En Tránsito (filtro fijo) ──────────────────────────── -->
+    <record id="surtido_tienda_view_list_transit" model="ir.ui.view">
+        <field name="name">surtido.tienda.list.transit</field>
+        <field name="model">surtido.tienda</field>
+        <field name="inherit_id" ref="surtido_tienda_view_list"/>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="attributes">
+                <attribute name="string">Surtidos en Tránsito</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ── Acciones ─────────────────────────────────────────────────── -->
+    <record id="action_surtido_tienda" model="ir.actions.act_window">
+        <field name="name">Surtidos a Tienda</field>
+        <field name="res_model">surtido.tienda</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_draft': 1}</field>
+    </record>
+
+    <record id="action_surtido_tienda_transit" model="ir.actions.act_window">
+        <field name="name">En Tránsito</field>
+        <field name="res_model">surtido.tienda</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('state', '=', 'sent')]</field>
+        <field name="view_id" ref="surtido_tienda_view_list_transit"/>
+    </record>
+
+    <!-- ── Menú ─────────────────────────────────────────────────────── -->
+    <menuitem
+        id="menu_surtido_tienda"
+        name="Surtidos a Tienda"
+        parent="stock.menu_stock_root"
+        action="action_surtido_tienda"
+        sequence="51"/>
+
+    <menuitem
+        id="menu_surtido_tienda_transit"
+        name="En Tránsito"
+        parent="stock.menu_stock_root"
+        action="action_surtido_tienda_transit"
+        sequence="52"/>
+
+</odoo>

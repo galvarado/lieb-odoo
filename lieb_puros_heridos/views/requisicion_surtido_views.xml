@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ── Requisición de Surtido – FORM ────────────────────────────── -->
+    <record id="requisicion_surtido_view_form" model="ir.ui.view">
+        <field name="name">requisicion.surtido.form</field>
+        <field name="model">requisicion.surtido</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_send"
+                            string="Enviar Solicitud"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_create_surtido"
+                            string="Crear Surtido"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'sent'"/>
+                    <button name="action_cancel"
+                            string="Cancelar"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state not in ('draft', 'sent')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,sent,fulfilled"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_surtidos"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-truck"
+                                invisible="surtido_count == 0">
+                            <field name="surtido_count" widget="statinfo" string="Surtidos"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="date" readonly="state != 'draft'"/>
+                            <field name="warehouse_id" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="responsable_id" readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+                    <field name="line_ids"
+                           readonly="state != 'draft'"
+                           widget="one2many">
+                        <list editable="bottom">
+                            <field name="product_id"/>
+                            <field name="condicion" optional="show" readonly="1"/>
+                            <field name="qty_requested"/>
+                        </list>
+                    </field>
+                    <field name="observaciones"
+                           readonly="state != 'draft'"
+                           placeholder="Observaciones adicionales…"/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ── Requisición de Surtido – LIST ────────────────────────────── -->
+    <record id="requisicion_surtido_view_list" model="ir.ui.view">
+        <field name="name">requisicion.surtido.list</field>
+        <field name="model">requisicion.surtido</field>
+        <field name="arch" type="xml">
+            <list decoration-success="state == 'fulfilled'"
+                  decoration-muted="state == 'cancelled'">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="warehouse_id"/>
+                <field name="responsable_id"/>
+                <field name="surtido_count" string="Surtidos"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'fulfilled'"
+                       decoration-info="state == 'sent'"
+                       decoration-muted="state in ('draft', 'cancelled')"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ── Acción ────────────────────────────────────────────────────── -->
+    <record id="action_requisicion_surtido" model="ir.actions.act_window">
+        <field name="name">Requisiciones de Surtido</field>
+        <field name="res_model">requisicion.surtido</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_draft': 1}</field>
+    </record>
+
+    <!-- ── Menú ─────────────────────────────────────────────────────── -->
+    <menuitem
+        id="menu_requisicion_surtido"
+        name="Requisiciones de Surtido"
+        parent="stock.menu_stock_root"
+        action="action_requisicion_surtido"
+        sequence="53"/>
+
+</odoo>

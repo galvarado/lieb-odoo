@@ -3,3 +3,15 @@ access_acta_clasificacion_user,acta.clasificacion.user,model_acta_clasificacion,
 access_acta_clasificacion_manager,acta.clasificacion.manager,model_acta_clasificacion,stock.group_stock_manager,1,1,1,1
 access_acta_clasificacion_line_user,acta.clasificacion.line.user,model_acta_clasificacion_line,stock.group_stock_user,1,1,1,0
 access_acta_clasificacion_line_manager,acta.clasificacion.line.manager,model_acta_clasificacion_line,stock.group_stock_manager,1,1,1,1
+access_motivo_retorno_user,motivo.retorno.user,model_motivo_retorno,stock.group_stock_user,1,0,0,0
+access_motivo_retorno_manager,motivo.retorno.manager,model_motivo_retorno,stock.group_stock_manager,1,1,1,1
+access_surtido_tienda_user,surtido.tienda.user,model_surtido_tienda,stock.group_stock_user,1,1,1,0
+access_surtido_tienda_manager,surtido.tienda.manager,model_surtido_tienda,stock.group_stock_manager,1,1,1,1
+access_surtido_tienda_line_user,surtido.tienda.line.user,model_surtido_tienda_line,stock.group_stock_user,1,1,1,0
+access_surtido_tienda_line_manager,surtido.tienda.line.manager,model_surtido_tienda_line,stock.group_stock_manager,1,1,1,1
+access_requisicion_surtido_user,requisicion.surtido.user,model_requisicion_surtido,stock.group_stock_user,1,1,1,0
+access_requisicion_surtido_manager,requisicion.surtido.manager,model_requisicion_surtido,stock.group_stock_manager,1,1,1,1
+access_requisicion_surtido_line_user,requisicion.surtido.line.user,model_requisicion_surtido_line,stock.group_stock_user,1,1,1,0
+access_requisicion_surtido_line_manager,requisicion.surtido.line.manager,model_requisicion_surtido_line,stock.group_stock_manager,1,1,1,1
+access_wizard_rechazo_tienda_user,wizard.rechazo.tienda.user,model_wizard_rechazo_tienda,stock.group_stock_user,1,1,1,1
+access_wizard_rechazo_tienda_line_user,wizard.rechazo.tienda.line.user,model_wizard_rechazo_tienda_line,stock.group_stock_user,1,1,1,1

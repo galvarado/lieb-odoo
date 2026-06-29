@@ -3,3 +3,8 @@ from . import product_product
 from . import sale_order_line
 from . import acta_clasificacion
 from . import pos_order
+from . import motivo_retorno
+from . import stock_move
+from . import stock_picking
+from . import surtido_tienda
+from . import requisicion_surtido

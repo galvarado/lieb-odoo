@@ -51,6 +51,11 @@ class ActaClasificacion(models.Model):
         ('approved', 'Aprobada'),
         ('done', 'Validada'),
     ], default='draft', tracking=True, string='Estado')
+    es_simplificada = fields.Boolean(
+        string='Acta Simplificada (Tienda)',
+        default=False,
+        help='Permite registrar solo tolerables detectados en tienda. Requiere una sola aprobación del grupo Aprobador de Actas de Tienda.',
+    )
     approver_1_id = fields.Many2one(
         'res.users', string='1ª Aprobación', readonly=True, copy=False,
     )
@@ -98,12 +103,25 @@ class ActaClasificacion(models.Model):
         self.ensure_one()
         if self.state != 'pending':
             raise UserError(_('El acta no está en espera de aprobación.'))
-        if not self.env.user.has_group('lieb_puros_heridos.group_acta_approver'):
+        user = self.env.user
+
+        if self.es_simplificada:
+            if not user.has_group('lieb_puros_heridos.group_acta_approver_tienda'):
+                raise UserError(_(
+                    'No tienes autorización para aprobar actas de tienda. '
+                    'Contacta al administrador para obtener el permiso de "Aprobador de Actas de Tienda".'
+                ))
+            self.approver_1_id = user
+            self.approver_1_date = fields.Datetime.now()
+            self.state = 'approved'
+            self.message_post(body=_('Aprobación registrada por %s. Acta lista para validar.') % user.name)
+            return
+
+        if not user.has_group('lieb_puros_heridos.group_acta_approver'):
             raise UserError(_(
                 'No tienes autorización para aprobar actas de clasificación. '
                 'Contacta al administrador para obtener el permiso de "Aprobador de Actas de Clasificación".'
             ))
-        user = self.env.user
         if not self.approver_1_id:
             self.approver_1_id = user
             self.approver_1_date = fields.Datetime.now()

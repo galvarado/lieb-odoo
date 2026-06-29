@@ -14,9 +14,13 @@
         'data/stock_location.xml',
         'data/product_template.xml',
         'data/sequences.xml',
+        'data/surtido_data.xml',
         'views/product_attribute_value_views.xml',
         'views/acta_clasificacion_views.xml',
         'views/report_views.xml',
+        'views/surtido_tienda_views.xml',
+        'views/requisicion_surtido_views.xml',
+        'views/rechazo_tienda_views.xml',
     ],
     'assets': {
         'point_of_sale._assets_pos': [

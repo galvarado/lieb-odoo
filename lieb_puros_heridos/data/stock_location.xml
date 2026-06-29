@@ -20,6 +20,13 @@
             <field name="usage">internal</field>
         </record>
 
+        <!-- Tránsito entre almacén y tiendas — stock visible "en camión" -->
+        <record id="location_transit_surtido" model="stock.location">
+            <field name="name">Tránsito Surtido</field>
+            <field name="location_id" ref="stock.stock_location_locations_virtual"/>
+            <field name="usage">transit</field>
+        </record>
+
         <!-- Ubicaciones Virtuales -->
         <record id="location_virtual_picado" model="stock.location">
             <field name="name">Picado</field>

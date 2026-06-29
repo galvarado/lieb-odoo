@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ── Wizard Rechazo Tienda ─────────────────────────────────────── -->
+    <record id="wizard_rechazo_tienda_view_form" model="ir.ui.view">
+        <field name="name">wizard.rechazo.tienda.form</field>
+        <field name="model">wizard.rechazo.tienda</field>
+        <field name="arch" type="xml">
+            <form string="Rechazar Piezas">
+                <group>
+                    <field name="picking_id" readonly="1"/>
+                    <field name="tipo_rechazo" required="1"/>
+                </group>
+                <field name="line_ids" widget="one2many">
+                    <list editable="bottom">
+                        <field name="product_id" readonly="1"/>
+                        <field name="condicion" readonly="1" optional="show"/>
+                        <field name="qty_disponible" readonly="1"/>
+                        <field name="qty_rechazada"/>
+                        <field name="motivo_retorno_id"
+                               required="qty_rechazada &gt; 0"
+                               domain="[('tipo', '=', parent.tipo_rechazo)]"/>
+                        <field name="nota" optional="show"/>
+                    </list>
+                </field>
+                <footer>
+                    <button name="action_confirmar"
+                            string="Confirmar Rechazo"
+                            type="object"
+                            class="btn-primary"/>
+                    <button string="Cancelar"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- ── Botones en stock.picking (entrada de surtido) ────────────── -->
+    <record id="stock_picking_surtido_buttons" model="ir.ui.view">
+        <field name="name">stock.picking.surtido.buttons</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_rechazar_piezas"
+                        string="Rechazar Piezas"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-times-circle"
+                        invisible="not es_surtido_in or state in ('done', 'cancel')"/>
+                <button name="action_registrar_tolerable"
+                        string="Registrar Tolerable"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-exclamation-triangle"
+                        invisible="not es_surtido_in or state in ('cancel',)"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ── Catálogo Motivos de Retorno ──────────────────────────────── -->
+    <record id="motivo_retorno_view_list" model="ir.ui.view">
+        <field name="name">motivo.retorno.list</field>
+        <field name="model">motivo.retorno</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="tipo"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_motivo_retorno" model="ir.actions.act_window">
+        <field name="name">Motivos de Retorno</field>
+        <field name="res_model">motivo.retorno</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <menuitem
+        id="menu_motivo_retorno"
+        name="Motivos de Retorno"
+        parent="stock.menu_stock_config_settings"
+        action="action_motivo_retorno"
+        sequence="60"/>
+
+    <!-- ── Acta simplificada – vista restringida (tolerable tienda) ── -->
+    <record id="acta_clasificacion_view_form_simplificada" model="ir.ui.view">
+        <field name="name">acta.clasificacion.form.simplificada</field>
+        <field name="model">acta.clasificacion</field>
+        <field name="inherit_id" ref="acta_clasificacion_view_form"/>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <!-- Ocultar columnas no aplican en tienda -->
+            <xpath expr="//field[@name='qty_herido_20']" position="attributes">
+                <attribute name="column_invisible">True</attribute>
+            </xpath>
+            <xpath expr="//field[@name='qty_herido_40']" position="attributes">
+                <attribute name="column_invisible">True</attribute>
+            </xpath>
+            <xpath expr="//field[@name='qty_picado']" position="attributes">
+                <attribute name="column_invisible">True</attribute>
+            </xpath>
+            <!-- Cambiar título del form -->
+            <xpath expr="//form" position="attributes">
+                <attribute name="string">Acta Tolerable – Tienda</attribute>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
