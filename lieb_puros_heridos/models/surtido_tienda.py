@@ -338,7 +338,7 @@ class SurtidoTienda(models.Model):
         return_pickings = self.env['stock.picking'].search([
             ('origin', '=', self.name),
             ('location_id', '=', loc_transit.id),
-            ('state', '=', 'done'),
+            ('state', 'not in', ['cancel']),
         ])
         rejected_by_product = {}
         motivo_by_product = {}

@@ -96,9 +96,7 @@ class WizardRechazoTienda(models.TransientModel):
             return_picking.action_confirm()
             return_picking.action_assign()
 
-            if return_picking.move_line_ids:
-                return_picking.move_line_ids.write({'quantity': line.qty_rechazada})
-            else:
+            if not return_picking.move_line_ids:
                 self.env['stock.move.line'].create({
                     'picking_id': return_picking.id,
                     'move_id': return_picking.move_ids[0].id,
@@ -108,9 +106,7 @@ class WizardRechazoTienda(models.TransientModel):
                     'location_id': loc_transit.id,
                     'location_dest_id': loc_dest_return.id,
                 })
-            return_picking.with_context(
-                skip_backorder=True, skip_immediate=True
-            ).button_validate()
+            # El almacén valida manualmente cuando recibe físicamente las piezas
 
             # Reducir qty del move original en el picking_in
             original_move = line.move_id
@@ -120,10 +116,8 @@ class WizardRechazoTienda(models.TransientModel):
             else:
                 original_move.product_uom_qty = new_qty
                 if original_move.move_line_ids:
-                    original_move.move_line_ids.write({
-                        'quantity': new_qty,
-                        'reserved_uom_qty': new_qty,
-                    })
+                    for ml in original_move.move_line_ids:
+                        ml.quantity = new_qty
 
         tipo_label = dict(self._fields['tipo_rechazo'].selection)[self.tipo_rechazo]
         self.picking_id.message_post(
