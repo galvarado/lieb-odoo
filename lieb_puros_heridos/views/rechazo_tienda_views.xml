@@ -59,6 +59,47 @@
         </field>
     </record>
 
+    <!-- ── Wizard Recepción con Revisión ────────────────────────────── -->
+    <record id="wizard_recepcion_surtido_view_form" model="ir.ui.view">
+        <field name="name">wizard.recepcion.surtido.form</field>
+        <field name="model">wizard.recepcion.surtido</field>
+        <field name="arch" type="xml">
+            <form string="Recibir con Revisión">
+                <group>
+                    <field name="surtido_id" readonly="1"/>
+                </group>
+                <field name="line_ids" widget="one2many">
+                    <list editable="bottom">
+                        <field name="picking_id" readonly="1" optional="show"/>
+                        <field name="product_id" readonly="1"/>
+                        <field name="condicion" readonly="1" optional="show"/>
+                        <field name="qty_esperada" readonly="1"/>
+                        <field name="qty_recibida"/>
+                        <field name="qty_rechazada" readonly="1"
+                               decoration-danger="qty_rechazada &gt; 0"/>
+                        <field name="tipo_rechazo"
+                               required="qty_rechazada &gt; 0"
+                               optional="show"/>
+                        <field name="motivo_retorno_id"
+                               required="qty_rechazada &gt; 0"
+                               domain="[('tipo', '=', tipo_rechazo)]"
+                               optional="show"/>
+                        <field name="nota" optional="hide"/>
+                    </list>
+                </field>
+                <footer>
+                    <button name="action_confirmar"
+                            string="Confirmar Recepción"
+                            type="object"
+                            class="btn-primary"/>
+                    <button string="Cancelar"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
     <!-- ── Catálogo Motivos de Retorno ──────────────────────────────── -->
     <record id="motivo_retorno_view_list" model="ir.ui.view">
         <field name="name">motivo.retorno.list</field>

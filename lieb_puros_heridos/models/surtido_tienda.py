@@ -264,6 +264,19 @@ class SurtidoTienda(models.Model):
         self.state = 'cancelled'
         self.message_post(body=_('Surtido cancelado.'))
 
+    def action_receive_with_review(self):
+        self.ensure_one()
+        if self.state != 'sent':
+            raise UserError(_('Solo se puede recibir un surtido en tránsito.'))
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Recibir con Revisión'),
+            'res_model': 'wizard.recepcion.surtido',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_surtido_id': self.id},
+        }
+
     def action_receive_all(self):
         self.ensure_one()
         if self.state != 'sent':

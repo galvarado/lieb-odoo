@@ -14,10 +14,15 @@
                             class="btn-primary"
                             confirm="¿Confirmar envío? El stock saldrá del almacén y quedará en tránsito hasta que la tienda reciba."
                             invisible="state != 'draft'"/>
+                    <button name="action_receive_with_review"
+                            string="Recibir con Revisión"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'sent'"/>
                     <button name="action_receive_all"
                             string="Recibir Todo"
                             type="object"
-                            class="btn-primary"
+                            class="btn-secondary"
                             confirm="¿Confirmar recepción completa? Se validarán todos los pickings entrantes."
                             invisible="state != 'sent'"/>
                     <button name="action_cancel"
