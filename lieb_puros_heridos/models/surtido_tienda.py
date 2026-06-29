@@ -217,6 +217,9 @@ class SurtidoTienda(models.Model):
         })
         picking.action_confirm()
         picking.action_assign()
+        picking.move_line_ids.filtered(lambda ml: not ml.company_id).write(
+            {'company_id': company.id}
+        )
 
         if immediate:
             if picking.move_line_ids:

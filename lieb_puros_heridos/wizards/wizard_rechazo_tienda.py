@@ -98,6 +98,9 @@ class WizardRechazoTienda(models.TransientModel):
             })
             return_picking.action_confirm()
             return_picking.action_assign()
+            return_picking.move_line_ids.filtered(lambda ml: not ml.company_id).write(
+                {'company_id': company.id}
+            )
 
             if not return_picking.move_line_ids:
                 self.env['stock.move.line'].create({

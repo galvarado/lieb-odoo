@@ -95,6 +95,11 @@ class WizardRecepcionSurtido(models.TransientModel):
                     # Nada recibido de este move — cancelar
                     move._action_cancel()
 
+            # Asegurar company_id en move lines antes de validar
+            picking.move_line_ids.filtered(lambda ml: not ml.company_id).write(
+                {'company_id': company.id}
+            )
+
             # Validar picking si aún tiene moves activos
             active_moves = picking.move_ids.filtered(
                 lambda m: m.state not in ('done', 'cancel')
@@ -142,6 +147,9 @@ class WizardRecepcionSurtido(models.TransientModel):
                 })
                 return_picking.action_confirm()
                 return_picking.action_assign()
+                return_picking.move_line_ids.filtered(lambda ml: not ml.company_id).write(
+                    {'company_id': company.id}
+                )
                 if not return_picking.move_line_ids:
                     self.env['stock.move.line'].create({
                         'picking_id': return_picking.id,
