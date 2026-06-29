@@ -217,11 +217,8 @@ class SurtidoTienda(models.Model):
 
         if immediate:
             if picking.move_line_ids:
-                picking.move_line_ids.write({
-                    'quantity': sum(ml.reserved_uom_qty for ml in picking.move_line_ids)
-                })
                 for ml in picking.move_line_ids:
-                    ml.quantity = ml.reserved_uom_qty
+                    ml.quantity = ml.move_id.product_uom_qty
             else:
                 for move in picking.move_ids:
                     self.env['stock.move.line'].create({
