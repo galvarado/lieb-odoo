@@ -82,7 +82,7 @@ class ActaClasificacion(models.Model):
         copy=False,
     )
     picking_count = fields.Integer(
-        string='Transferencias',
+        string='Núm. Transferencias',
         compute='_compute_picking_count',
     )
 
