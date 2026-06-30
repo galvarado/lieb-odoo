@@ -1,8 +1,5 @@
-import logging
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
-
-_logger = logging.getLogger(__name__)
 
 
 class WizardRecepcionSurtido(models.TransientModel):
@@ -86,12 +83,6 @@ class WizardRecepcionSurtido(models.TransientModel):
             for move in picking.move_ids.filtered(lambda m: m.state not in ('done', 'cancel')):
                 wline = line_by_product.get(move.product_id.id)
                 qty_recibida = wline.qty_recibida if wline else move.product_uom_qty
-
-                _logger.error(
-                    'LIEB DEBUG procesar move %s product=%s qty_recibida=%s move_line_ids=%s',
-                    move.id, move.product_id.display_name, qty_recibida,
-                    picking.move_line_ids.ids,
-                )
 
                 if qty_recibida > 0:
                     move.product_uom_qty = qty_recibida
