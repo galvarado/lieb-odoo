@@ -79,6 +79,14 @@ class WizardRecepcionSurtido(models.TransientModel):
             # Setear cantidades recibidas en move lines
             for line in lines:
                 move = line.move_id
+                # Fallback si move_id no llegó (campo no enviado por web_save)
+                if not move and line.product_id:
+                    move = picking.move_ids.filtered(
+                        lambda m: m.product_id == line.product_id
+                        and m.state not in ('done', 'cancel')
+                    )[:1]
+                if not move:
+                    continue
                 if line.qty_recibida > 0:
                     move.product_uom_qty = line.qty_recibida
                     if move.move_line_ids:
