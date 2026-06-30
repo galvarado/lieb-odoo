@@ -56,6 +56,42 @@
                         icon="fa-exclamation-triangle"
                         invisible="not es_surtido_in or state in ('cancel',)"/>
             </xpath>
+            <!-- Motivo de rechazo en operaciones detalladas del return picking -->
+            <xpath expr="//page[@name='moves_one2many']//list" position="inside">
+                <field name="motivo_retorno_id"
+                       string="Motivo Rechazo"
+                       readonly="1"
+                       optional="show"
+                       invisible="not context.get('es_rechazo_surtido')"/>
+                <field name="nota_rechazo"
+                       string="Nota"
+                       readonly="1"
+                       optional="hide"
+                       invisible="not context.get('es_rechazo_surtido')"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ── Motivo rechazo visible en return picking (rechazo surtido) ── -->
+    <record id="stock_picking_rechazo_info" model="ir.ui.view">
+        <field name="name">stock.picking.rechazo.info</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='moves_one2many']" position="before">
+                <page string="Detalle de Rechazo"
+                      name="rechazo_info"
+                      invisible="not es_rechazo_surtido">
+                    <field name="move_ids" widget="one2many" readonly="1">
+                        <list>
+                            <field name="product_id"/>
+                            <field name="product_uom_qty" string="Cantidad"/>
+                            <field name="motivo_retorno_id" string="Motivo Rechazo"/>
+                            <field name="nota_rechazo" string="Nota" optional="show"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
         </field>
     </record>
 
