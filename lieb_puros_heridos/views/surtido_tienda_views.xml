@@ -43,6 +43,13 @@
                                 invisible="picking_out_count == 0">
                             <field name="picking_out_count" widget="statinfo" string="Salidas"/>
                         </button>
+                        <button name="action_view_pickings_return"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-undo"
+                                invisible="picking_return_count == 0">
+                            <field name="picking_return_count" widget="statinfo" string="Rechazos"/>
+                        </button>
                         <button name="action_view_pickings_in"
                                 type="object"
                                 class="oe_stat_button"

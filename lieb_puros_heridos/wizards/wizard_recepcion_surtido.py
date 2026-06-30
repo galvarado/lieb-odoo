@@ -148,6 +148,7 @@ class WizardRecepcionSurtido(models.TransientModel):
                 })
                 return_picking.action_confirm()
                 return_picking.action_assign()
+                self.surtido_id.picking_return_ids = [(4, return_picking.id)]
 
         self.surtido_id.action_check_received()
         self.surtido_id.message_post(body=_('Recepción con revisión completada.'))

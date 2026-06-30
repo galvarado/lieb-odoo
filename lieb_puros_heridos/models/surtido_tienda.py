@@ -68,18 +68,27 @@ class SurtidoTienda(models.Model):
         string='Entradas (Tránsito→Tienda)',
         copy=False,
     )
+    picking_return_ids = fields.Many2many(
+        'stock.picking',
+        'surtido_tienda_picking_return_rel',
+        'surtido_id', 'picking_id',
+        string='Rechazos',
+        copy=False,
+    )
     picking_out_count = fields.Integer(compute='_compute_picking_counts')
     picking_in_count = fields.Integer(compute='_compute_picking_counts')
+    picking_return_count = fields.Integer(compute='_compute_picking_counts')
     transit_count = fields.Integer(
         string='Pendientes de Recepción',
         compute='_compute_picking_counts',
     )
 
-    @api.depends('picking_out_ids', 'picking_in_ids', 'picking_in_ids.state')
+    @api.depends('picking_out_ids', 'picking_in_ids', 'picking_in_ids.state', 'picking_return_ids')
     def _compute_picking_counts(self):
         for rec in self:
             rec.picking_out_count = len(rec.picking_out_ids)
             rec.picking_in_count = len(rec.picking_in_ids)
+            rec.picking_return_count = len(rec.picking_return_ids)
             rec.transit_count = len(
                 rec.picking_in_ids.filtered(lambda p: p.state != 'done')
             )
@@ -319,6 +328,9 @@ class SurtidoTienda(models.Model):
 
     def action_view_pickings_in(self):
         return self._action_view_pickings(self.picking_in_ids, _('Entradas'))
+
+    def action_view_pickings_return(self):
+        return self._action_view_pickings(self.picking_return_ids, _('Rechazos'))
 
     def _action_view_pickings(self, pickings, title):
         return {

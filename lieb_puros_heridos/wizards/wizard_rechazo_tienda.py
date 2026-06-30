@@ -99,6 +99,12 @@ class WizardRechazoTienda(models.TransientModel):
             return_picking.action_confirm()
             return_picking.action_assign()
 
+            surtido = self.env['surtido.tienda'].search([
+                ('picking_in_ids', 'in', self.picking_id.ids),
+            ], limit=1)
+            if surtido:
+                surtido.picking_return_ids = [(4, return_picking.id)]
+
             if not return_picking.move_line_ids:
                 self.env['stock.move.line'].create({
                     'picking_id': return_picking.id,
