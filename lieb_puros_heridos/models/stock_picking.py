@@ -9,6 +9,11 @@ class StockPicking(models.Model):
         compute='_compute_es_surtido_in',
         store=False,
     )
+    es_rechazo_surtido = fields.Boolean(
+        string='Es Rechazo de Surtido',
+        default=False,
+        copy=False,
+    )
 
     def _compute_es_surtido_in(self):
         surtido_in_ids = self.env['surtido.tienda'].search([]).picking_in_ids.ids

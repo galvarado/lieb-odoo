@@ -84,6 +84,7 @@ class WizardRechazoTienda(models.TransientModel):
                 'location_dest_id': loc_dest_return.id,
                 'origin': self.picking_id.origin or self.picking_id.name,
                 'company_id': company.id,
+                'es_rechazo_surtido': True,
             })
             self.env['stock.move'].create({
                 'name': _('Rechazo: %s') % line.product_id.display_name,

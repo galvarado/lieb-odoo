@@ -137,6 +137,7 @@ class WizardRecepcionSurtido(models.TransientModel):
                     'location_dest_id': loc_dest_return.id,
                     'origin': self.surtido_id.name,
                     'company_id': company.id,
+                    'es_rechazo_surtido': True,
                 })
                 self.env['stock.move'].create({
                     'name': _('Rechazo: %s') % move.product_id.display_name,

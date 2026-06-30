@@ -189,11 +189,7 @@
         <field name="name">Rechazos Pendientes</field>
         <field name="res_model">stock.picking</field>
         <field name="view_mode">list,form</field>
-        <field name="domain">[
-            ('location_id', '=', %(lieb_puros_heridos.location_transit_surtido)d),
-            ('state', 'not in', ['done', 'cancel'])
-        ]</field>
-        <field name="context">{}</field>
+        <field name="domain">[('es_rechazo_surtido', '=', True), ('state', 'not in', ['done', 'cancel'])]</field>
     </record>
 
     <menuitem
