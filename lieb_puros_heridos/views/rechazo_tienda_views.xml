@@ -56,19 +56,6 @@
                         icon="fa-exclamation-triangle"
                         invisible="not es_surtido_in or state in ('cancel',)"/>
             </xpath>
-            <!-- Motivo de rechazo en operaciones detalladas del return picking -->
-            <xpath expr="//page[@name='moves_one2many']//list" position="inside">
-                <field name="motivo_retorno_id"
-                       string="Motivo Rechazo"
-                       readonly="1"
-                       optional="show"
-                       invisible="not context.get('es_rechazo_surtido')"/>
-                <field name="nota_rechazo"
-                       string="Nota"
-                       readonly="1"
-                       optional="hide"
-                       invisible="not context.get('es_rechazo_surtido')"/>
-            </xpath>
         </field>
     </record>
 
@@ -78,7 +65,7 @@
         <field name="model">stock.picking</field>
         <field name="inherit_id" ref="stock.view_picking_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//page[@name='moves_one2many']" position="before">
+            <xpath expr="//notebook" position="inside">
                 <page string="Detalle de Rechazo"
                       name="rechazo_info"
                       invisible="not es_rechazo_surtido">
