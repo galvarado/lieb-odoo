@@ -175,6 +175,20 @@ class SurtidoTienda(models.Model):
             ('warehouse_id', '=', self.warehouse_dest_id.id),
         ], limit=1) or int_type_src
 
+        # Validar stock antes de crear pickings
+        errores = []
+        for line in self.line_ids:
+            loc_src, _loc_dest = self._route_line(line)
+            disponible = line.product_id.with_context(location=loc_src.id).qty_available
+            if line.qty > disponible:
+                errores.append(_(
+                    '• %s: necesita %s, disponible %s en %s'
+                ) % (line.product_id.display_name, line.qty, disponible, loc_src.complete_name))
+        if errores:
+            raise ValidationError(
+                _('Stock insuficiente para enviar el surtido:\n\n') + '\n'.join(errores)
+            )
+
         # Agrupar líneas por (src, dest)
         groups = {}
         for line in self.line_ids:
