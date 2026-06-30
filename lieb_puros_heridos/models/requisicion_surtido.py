@@ -26,6 +26,12 @@ class RequisicionSurtido(models.Model):
         required=True,
         tracking=True,
     )
+    warehouse_src_id = fields.Many2one(
+        'stock.warehouse',
+        string='Almacén Origen',
+        required=True,
+        tracking=True,
+    )
     responsable_id = fields.Many2one(
         'res.users',
         string='Responsable',
@@ -82,6 +88,7 @@ class RequisicionSurtido(models.Model):
 
         surtido = self.env['surtido.tienda'].create({
             'requisicion_id': self.id,
+            'warehouse_src_id': self.warehouse_src_id.id,
             'warehouse_dest_id': self.warehouse_id.id,
             'line_ids': [(0, 0, {
                 'product_id': line.product_id.id,

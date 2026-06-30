@@ -45,6 +45,7 @@
                         <group>
                             <field name="date" readonly="state != 'draft'"/>
                             <field name="warehouse_id" readonly="state != 'draft'"/>
+                            <field name="warehouse_src_id" readonly="state != 'draft'"/>
                         </group>
                         <group>
                             <field name="responsable_id" readonly="state != 'draft'"/>
@@ -77,6 +78,7 @@
                   decoration-muted="state == 'cancelled'">
                 <field name="name"/>
                 <field name="date"/>
+                <field name="warehouse_src_id" optional="show"/>
                 <field name="warehouse_id"/>
                 <field name="responsable_id"/>
                 <field name="surtido_count" string="Surtidos"/>
