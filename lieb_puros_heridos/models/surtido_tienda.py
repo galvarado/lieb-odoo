@@ -78,19 +78,29 @@ class SurtidoTienda(models.Model):
     picking_out_count = fields.Integer(compute='_compute_picking_counts')
     picking_in_count = fields.Integer(compute='_compute_picking_counts')
     picking_return_count = fields.Integer(compute='_compute_picking_counts')
+    return_pending_count = fields.Integer(
+        string='Rechazos Pendientes',
+        compute='_compute_picking_counts',
+    )
     transit_count = fields.Integer(
         string='Pendientes de Recepción',
         compute='_compute_picking_counts',
     )
 
-    @api.depends('picking_out_ids', 'picking_in_ids', 'picking_in_ids.state', 'picking_return_ids')
+    @api.depends(
+        'picking_out_ids', 'picking_in_ids', 'picking_in_ids.state',
+        'picking_return_ids', 'picking_return_ids.state',
+    )
     def _compute_picking_counts(self):
         for rec in self:
             rec.picking_out_count = len(rec.picking_out_ids)
             rec.picking_in_count = len(rec.picking_in_ids)
             rec.picking_return_count = len(rec.picking_return_ids)
+            rec.return_pending_count = len(
+                rec.picking_return_ids.filtered(lambda p: p.state not in ('done', 'cancel'))
+            )
             rec.transit_count = len(
-                rec.picking_in_ids.filtered(lambda p: p.state != 'done')
+                rec.picking_in_ids.filtered(lambda p: p.state not in ('done', 'cancel'))
             )
 
     # ── Constraints ───────────────────────────────────────────────────────────
