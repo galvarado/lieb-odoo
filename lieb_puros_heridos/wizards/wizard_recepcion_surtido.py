@@ -1,5 +1,8 @@
+import logging
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
+
+_logger = logging.getLogger(__name__)
 
 
 class WizardRecepcionSurtido(models.TransientModel):
@@ -94,6 +97,15 @@ class WizardRecepcionSurtido(models.TransientModel):
                 else:
                     # Nada recibido de este move — cancelar
                     move._action_cancel()
+
+            # Log estado de move lines antes de validar
+            for ml in picking.move_line_ids:
+                _logger.error(
+                    'LIEB DEBUG pre-validate move_line id=%s company_id=%s product_uom_id=%s '
+                    'product_id=%s qty=%s move_id=%s',
+                    ml.id, ml.company_id.id, ml.product_uom_id.id,
+                    ml.product_id.id, ml.quantity, ml.move_id.id,
+                )
 
             # Validar picking si aún tiene moves activos
             active_moves = picking.move_ids.filtered(
