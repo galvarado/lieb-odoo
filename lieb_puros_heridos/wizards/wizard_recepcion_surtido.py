@@ -80,9 +80,17 @@ class WizardRecepcionSurtido(models.TransientModel):
         )
 
         for picking in pending_pickings:
+            # Guardar qty original antes de modificar (para calcular rechazado después)
+            original_qty = {
+                move.product_id.id: move.product_uom_qty
+                for move in picking.move_ids.filtered(lambda m: m.state not in ('done', 'cancel'))
+            }
+            rechazos = []  # [(move, wline, qty_rechazada)]
+
             for move in picking.move_ids.filtered(lambda m: m.state not in ('done', 'cancel')):
                 wline = line_by_product.get(move.product_id.id)
-                qty_recibida = wline.qty_recibida if wline else move.product_uom_qty
+                qty_original = original_qty[move.product_id.id]
+                qty_recibida = wline.qty_recibida if wline else qty_original
 
                 if qty_recibida > 0:
                     move.product_uom_qty = qty_recibida
@@ -102,29 +110,16 @@ class WizardRecepcionSurtido(models.TransientModel):
                 else:
                     move._action_cancel()
 
+                qty_rechazada = max(0.0, qty_original - qty_recibida)
+                if qty_rechazada > 0 and wline:
+                    rechazos.append((move, wline, qty_rechazada))
+
             active_moves = picking.move_ids.filtered(lambda m: m.state not in ('done', 'cancel'))
             if active_moves:
                 picking.with_context(skip_backorder=True, skip_immediate=True).button_validate()
 
-            # Retornos para rechazos
-            for move in picking.move_ids:
-                wline = line_by_product.get(move.product_id.id)
-                if not wline:
-                    continue
-                qty_original = move.product_uom_qty + (
-                    move.product_uom_qty - (wline.qty_recibida or move.product_uom_qty)
-                )
-                qty_rechazada = (move.product_uom_qty - wline.qty_recibida) \
-                    if wline.qty_recibida < move.product_uom_qty else 0
-                # Calcular rechazado como lo que el usuario dejó de recibir
-                expected = self.line_ids.filtered(
-                    lambda l: l.product_id.id == move.product_id.id
-                )[:1]
-                qty_rechazada = max(0.0, (expected.qty_esperada - expected.qty_recibida)
-                                   if expected else 0.0)
-                if qty_rechazada <= 0:
-                    continue
-
+            # Crear return pickings para rechazos
+            for move, wline, qty_rechazada in rechazos:
                 condicion = move.product_id.lieb_condicion or ''
                 if wline.tipo_rechazo == 'dano':
                     loc_dest_return = loc_revision
