@@ -43,12 +43,14 @@ class WizardRecepcionSurtido(models.TransientModel):
         if not self.line_ids:
             raise UserError(_('No hay líneas para procesar.'))
 
-        # Construir mapa product_id → wizard_line (no confiar en move_id/picking_id
-        # del wizard porque web_save no siempre envía campos readonly del One2many)
+        # Construir mapa product_id → wizard_line
+        # product_id es readonly en la vista → Odoo 18 no lo envía en web_save
+        # Fallback: derivar product_id desde move_id (invisible="1", sí llega)
         line_by_product = {}
         for line in self.line_ids:
-            if line.product_id:
-                line_by_product[line.product_id.id] = line
+            product = line.product_id or (line.move_id.product_id if line.move_id else False)
+            if product:
+                line_by_product[product.id] = line
 
         company = self.env.company
         loc_transit = self.env.ref('lieb_puros_heridos.location_transit_surtido')
@@ -171,6 +173,16 @@ class WizardRecepcionSurtidoLine(models.TransientModel):
     picking_id = fields.Many2one('stock.picking', readonly=True)
     move_id = fields.Many2one('stock.move', readonly=True)
     product_id = fields.Many2one('product.product', string='Producto', readonly=True)
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            # product_id es readonly en la vista y Odoo 18 no lo envía en web_save
+            # Recuperarlo desde move_id que sí llega (invisible, no readonly)
+            if not vals.get('product_id') and vals.get('move_id'):
+                move = self.env['stock.move'].browse(vals['move_id'])
+                vals['product_id'] = move.product_id.id
+        return super().create(vals_list)
     condicion = fields.Char(related='product_id.lieb_condicion', readonly=True, string='Condición')
     qty_esperada = fields.Float(string='Esperada', readonly=True, digits=(12, 2))
     qty_recibida = fields.Float(string='Recibida', digits=(12, 2))
