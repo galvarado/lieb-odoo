@@ -172,19 +172,9 @@ class WizardRecepcionSurtidoLine(models.TransientModel):
     wizard_id = fields.Many2one('wizard.recepcion.surtido', ondelete='cascade')
     picking_id = fields.Many2one('stock.picking', readonly=True)
     move_id = fields.Many2one('stock.move', readonly=True)
-    product_id = fields.Many2one('product.product', string='Producto', readonly=True)
-
-    @api.model_create_multi
-    def create(self, vals_list):
-        for vals in vals_list:
-            # product_id es readonly en la vista y Odoo 18 no lo envía en web_save
-            # Recuperarlo desde move_id que sí llega (invisible, no readonly)
-            if not vals.get('product_id') and vals.get('move_id'):
-                move = self.env['stock.move'].browse(vals['move_id'])
-                vals['product_id'] = move.product_id.id
-        return super().create(vals_list)
+    product_id = fields.Many2one('product.product', string='Producto')
     condicion = fields.Char(related='product_id.lieb_condicion', readonly=True, string='Condición')
-    qty_esperada = fields.Float(string='Esperada', readonly=True, digits=(12, 2))
+    qty_esperada = fields.Float(string='Esperada', digits=(12, 2))
     qty_recibida = fields.Float(string='Recibida', digits=(12, 2))
     qty_rechazada = fields.Float(
         string='Rechazada',
