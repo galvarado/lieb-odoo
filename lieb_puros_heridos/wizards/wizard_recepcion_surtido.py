@@ -1,5 +1,8 @@
+import logging
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
+
+_logger = logging.getLogger(__name__)
 
 
 class WizardRecepcionSurtido(models.TransientModel):
@@ -152,6 +155,11 @@ class WizardRecepcionSurtido(models.TransientModel):
                 return_picking.action_confirm()
                 return_picking.action_assign()
                 self.surtido_id.picking_return_ids = [(4, return_picking.id)]
+                _logger.error(
+                    'LIEB return_picking=%s state=%s surtido_return_ids=%s',
+                    return_picking.id, return_picking.state,
+                    self.surtido_id.picking_return_ids.ids,
+                )
 
         self.surtido_id.action_check_received()
         self.surtido_id.message_post(body=_('Recepción con revisión completada.'))
