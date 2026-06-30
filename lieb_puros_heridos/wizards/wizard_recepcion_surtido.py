@@ -17,26 +17,27 @@ class WizardRecepcionSurtido(models.TransientModel):
     )
 
     @api.model
-    def default_get(self, fields_list):
-        res = super().default_get(fields_list)
-        surtido_id = self.env.context.get('default_surtido_id')
-        if not surtido_id:
-            return res
-        surtido = self.env['surtido.tienda'].browse(surtido_id)
-        lines = []
+    def create_for_surtido(self, surtido):
+        """Crear wizard en DB antes de abrir el form para que las líneas existan
+        con product_id/qty_esperada persistidos. Evita el problema de Odoo 18
+        donde default_get values no se marcan 'dirty' y no se envían en web_save."""
+        line_vals = []
         for picking in surtido.picking_in_ids.filtered(
             lambda p: p.state not in ('done', 'cancel')
         ):
             for move in picking.move_ids.filtered(lambda m: m.state not in ('done', 'cancel')):
-                lines.append((0, 0, {
+                line_vals.append({
                     'picking_id': picking.id,
                     'move_id': move.id,
                     'product_id': move.product_id.id,
                     'qty_esperada': move.product_uom_qty,
                     'qty_recibida': move.product_uom_qty,
-                }))
-        res['line_ids'] = lines
-        return res
+                })
+        wizard = self.create({
+            'surtido_id': surtido.id,
+            'line_ids': [(0, 0, v) for v in line_vals],
+        })
+        return wizard
 
     def action_confirmar(self):
         self.ensure_one()
@@ -172,9 +173,9 @@ class WizardRecepcionSurtidoLine(models.TransientModel):
     wizard_id = fields.Many2one('wizard.recepcion.surtido', ondelete='cascade')
     picking_id = fields.Many2one('stock.picking', readonly=True)
     move_id = fields.Many2one('stock.move', readonly=True)
-    product_id = fields.Many2one('product.product', string='Producto')
+    product_id = fields.Many2one('product.product', string='Producto', readonly=True)
     condicion = fields.Char(related='product_id.lieb_condicion', readonly=True, string='Condición')
-    qty_esperada = fields.Float(string='Esperada', digits=(12, 2))
+    qty_esperada = fields.Float(string='Esperada', readonly=True, digits=(12, 2))
     qty_recibida = fields.Float(string='Recibida', digits=(12, 2))
     qty_rechazada = fields.Float(
         string='Rechazada',

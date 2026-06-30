@@ -282,13 +282,14 @@ class SurtidoTienda(models.Model):
         self.ensure_one()
         if self.state != 'sent':
             raise UserError(_('Solo se puede recibir un surtido en tránsito.'))
+        wizard = self.env['wizard.recepcion.surtido'].create_for_surtido(self)
         return {
             'type': 'ir.actions.act_window',
             'name': _('Recepción Parcial'),
             'res_model': 'wizard.recepcion.surtido',
+            'res_id': wizard.id,
             'view_mode': 'form',
             'target': 'new',
-            'context': {'default_surtido_id': self.id},
         }
 
     def action_receive_all(self):
