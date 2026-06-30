@@ -1,5 +1,8 @@
+import logging
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
+
+_logger = logging.getLogger(__name__)
 
 
 class WizardRecepcionSurtido(models.TransientModel):
@@ -92,8 +95,13 @@ class WizardRecepcionSurtido(models.TransientModel):
                 qty_original = original_qty[move.product_id.id]
                 qty_recibida = wline.qty_recibida if wline else qty_original
 
+                _logger.error(
+                    'LIEB recepcion_parcial product=%s qty_original=%s qty_recibida=%s wline=%s',
+                    move.product_id.display_name, qty_original, qty_recibida, bool(wline),
+                )
+
                 if qty_recibida > 0:
-                    move.product_uom_qty = qty_recibida
+                    # Solo ajustar la move_line; NO tocar product_uom_qty para evitar re-asignación
                     if move.move_line_ids:
                         move.move_line_ids.write({'quantity': qty_recibida})
                     else:
